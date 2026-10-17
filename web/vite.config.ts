@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { '@': path.resolve(import.meta.dirname, './src') },
+    // node_modules is a link to node_modules.nosync; following it hides packages from Vite's dependency handling.
+    preserveSymlinks: true,
   },
   server: {
     host: true,
