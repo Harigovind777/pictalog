@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from pictalog.catalog.prompt import STUDIO, build_prompt, build_subject, seed_for
 from pictalog.images import save_image
-from pictalog.models import Heartbeat, Import, Job, Variant, utcnow
+from pictalog.models import Catalog, Heartbeat, Import, Job, Variant, utcnow
 from pictalog.schemas import ExtractedItem
 
 
@@ -168,3 +168,15 @@ def helper_status(db: Session, now: datetime | None = None) -> dict:
         "last_seen_at": last_seen,
         "engine": beat.engine if beat else None,
     }
+
+
+def cancel_catalog_jobs(db: Session, catalog: Catalog) -> None:
+    """Nothing left to do for a deleted catalog: stop the helper spending time on it."""
+    variant_ids = [v.id for p in catalog.products for v in p.variants]
+    import_ids = [i.id for i in catalog.imports]
+    db.execute(
+        update(Job)
+        .where(Job.status.in_(("queued", "running")))
+        .where((Job.variant_id.in_(variant_ids)) | (Job.import_id.in_(import_ids)))
+        .values(status="cancelled")
+    )

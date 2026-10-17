@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from pictalog.auth import current_user
 from pictalog.db import get_db
+from pictalog.jobs import cancel_catalog_jobs
 from pictalog.models import Catalog, User
 from pictalog.schemas import CatalogIn, CatalogOut, CatalogSummary, CatalogUpdate
 
@@ -53,6 +54,8 @@ def update_catalog(
 
 @router.delete("/{catalog_id}", status_code=204)
 def delete_catalog(catalog_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)) -> Response:
-    db.delete(get_owned_catalog(db, user, catalog_id))
+    catalog = get_owned_catalog(db, user, catalog_id)
+    cancel_catalog_jobs(db, catalog)
+    db.delete(catalog)
     db.commit()
     return Response(status_code=204)

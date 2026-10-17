@@ -23,8 +23,8 @@ def regenerate(variant_id: int, user: User = Depends(current_user), db: Session 
     """A new take on the image — also how "Generate anyway" works for rows without enough detail."""
     variant = get_owned_variant(db, user, variant_id)
     variant.seed_offset += 1
-    if variant.image_source == "provided":
-        variant.image_source = "none"
+    if variant.image_source in ("provided", "uploaded"):
+        variant.image_source = "none"  # asking for an AI image replaces the photo once it's ready
     enqueue_image(db, variant)
     db.commit()
     return VariantOut.of(variant)

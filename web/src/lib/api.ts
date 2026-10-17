@@ -8,6 +8,9 @@ export const API_BASE: string = import.meta.env.VITE_API_BASE ?? ''
 
 const TOKEN_KEY = 'pictalog.token'
 
+/** Fired when the server rejects the saved sign-in (expired or revoked), so the app can show the sign-in page. */
+export const SIGNED_OUT_EVENT = 'pictalog:signed-out'
+
 export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY)
@@ -56,7 +59,10 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     throw new ApiError(0, "Can't reach Pictalog. Check your internet connection.")
   }
-  if (res.status === 401) setToken(null)
+  if (res.status === 401 && token) {
+    setToken(null)
+    window.dispatchEvent(new Event(SIGNED_OUT_EVENT))
+  }
   if (!res.ok) throw new ApiError(res.status, await errorMessage(res))
   if (res.status === 204) return undefined as T
   return res.json() as Promise<T>

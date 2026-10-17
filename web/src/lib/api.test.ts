@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, api, apiUpload, assetUrl, getToken, setToken } from './api'
+import { ApiError, SIGNED_OUT_EVENT, api, apiUpload, assetUrl, getToken, setToken } from './api'
 
 function mockFetch(status: number, body: unknown) {
   const fn = vi.fn(async (_url: string, _init?: RequestInit) =>
@@ -47,6 +47,16 @@ describe('api', () => {
     mockFetch(401, { detail: 'Please sign in again.' })
     await expect(api('/api/auth/me')).rejects.toMatchObject({ status: 401 })
     expect(getToken()).toBeNull()
+  })
+
+  it('announces sign-out on 401 so the app returns to the sign-in page', async () => {
+    setToken('expired')
+    const heard = vi.fn()
+    window.addEventListener(SIGNED_OUT_EVENT, heard)
+    mockFetch(401, { detail: 'Please sign in again.' })
+    await api('/api/catalogs').catch(() => {})
+    window.removeEventListener(SIGNED_OUT_EVENT, heard)
+    expect(heard).toHaveBeenCalledOnce()
   })
 
   it('ApiError carries server detail message', async () => {

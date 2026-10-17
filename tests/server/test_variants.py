@@ -59,3 +59,20 @@ def test_variant_of_other_company_404(client, signup):
     assert client.post(f"/api/variants/{v['id']}/regenerate", headers=b).status_code == 404
     r = client.post(f"/api/variants/{v['id']}/image", files={"file": ("p.png", png_bytes(5, 5), "image/png")}, headers=b)
     assert r.status_code == 404
+
+
+def test_regenerate_an_uploaded_photo_makes_an_ai_image(client, signup, db, app):
+    from pictalog.jobs import complete_image
+    from pictalog.models import Variant
+
+    h = signup()
+    v = first_variant(applied_catalog(client, h))
+    client.post(f"/api/variants/{v['id']}/image", files={"file": ("p.png", png_bytes(50, 50), "image/png")}, headers=h)
+    assert client.post(f"/api/variants/{v['id']}/regenerate", headers=h).json()["image_status"] == "queued"
+    job = db.scalars(select(Job).where(Job.variant_id == v["id"], Job.status == "queued")).one()
+    job.status = "running"  # as if the helper had claimed it
+    db.commit()
+    complete_image(db, app.state.storage, job, png_bytes(64, 64))
+    variant = db.get(Variant, v["id"])
+    db.refresh(variant)
+    assert variant.image_source == "generated" and variant.image_status == "ready"

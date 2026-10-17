@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import * as apiClient from './api'
 import type { User } from './types'
 
@@ -26,6 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const setUser = useCallback((user: User) => queryClient.setQueryData(['me'], user), [queryClient])
+
+  useEffect(() => {
+    const signedOut = () => queryClient.clear()
+    window.addEventListener(apiClient.SIGNED_OUT_EVENT, signedOut)
+    return () => window.removeEventListener(apiClient.SIGNED_OUT_EVENT, signedOut)
+  }, [queryClient])
 
   const value = useMemo<AuthContextValue>(
     () => ({

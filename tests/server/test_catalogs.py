@@ -68,3 +68,17 @@ def test_files_rejects_non_img_keys(client, app):
     assert client.get("/api/files/uploads/secret.xlsx").status_code == 404
     assert client.get("/api/files/img/../uploads/secret.xlsx").status_code == 404
     assert client.get("/api/files/img/missing.webp").status_code == 404
+
+
+def test_delete_catalog_cancels_its_jobs(client, signup, db):
+    from sqlalchemy import select
+
+    from pictalog.models import Job
+    from test_worker_api import applied_catalog
+
+    h = signup()
+    catalog = applied_catalog(client, h)
+    assert db.scalars(select(Job.status)).all() == ["queued"] * 3
+    client.delete(f"/api/catalogs/{catalog['id']}", headers=h)
+    db.expire_all()
+    assert set(db.scalars(select(Job.status)).all()) == {"cancelled"}
