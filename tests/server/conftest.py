@@ -34,3 +34,20 @@ def signup(client):
         return {"Authorization": f"Bearer {r.json()['token']}"}
 
     return _signup
+
+
+@pytest.fixture
+def db(client, app):
+    with app.state.sessionmaker() as session:
+        yield session
+
+
+@pytest.fixture
+def catalog(db):
+    from pictalog.models import Catalog, User
+
+    user = User(email="t@x.com", password_hash="x", company_name="Test Co")
+    cat = Catalog(user=user, name="Test catalog")
+    db.add(cat)
+    db.commit()
+    return cat

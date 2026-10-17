@@ -83,6 +83,7 @@ class Variant(Base):
     image_status: Mapped[str] = mapped_column(String(20), default="none")
     seed_offset: Mapped[int] = mapped_column(default=0)
     visual_hash: Mapped[str] = mapped_column(String(64), default="")
+    row_hash: Mapped[str] = mapped_column(String(64), default="")
     position: Mapped[int] = mapped_column(default=0)
 
     product: Mapped[Product] = relationship(back_populates="variants")
@@ -119,6 +120,8 @@ class Job(Base):
     # queued | running | done | failed | cancelled
     status: Mapped[str] = mapped_column(String(10), default="queued", index=True)
     payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    variant_id: Mapped[int | None] = mapped_column(index=True, default=None)
+    import_id: Mapped[int | None] = mapped_column(index=True, default=None)
     attempts: Mapped[int] = mapped_column(default=0)
     claimed_at: Mapped[datetime | None] = mapped_column(default=None)
     error: Mapped[str | None] = mapped_column(Text, default=None)
