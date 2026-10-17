@@ -1,0 +1,173 @@
+/* The launch intro, "The Shot" (see intro.js): through a camera's viewfinder the name drifts into focus, the focus
+   brackets lock onto it, the shutter fires, and the aperture opens onto the app. Loaded straight from index.html so
+   it shows on the very first frame, before the app's own code has loaded. */
+
+@font-face {
+  font-family: "Pictalog Intro";
+  src: url("/intro/mona-sans.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-display: block;
+}
+
+/* While the intro plays, everything behind it is black: no white flash between the launch screen and the app. */
+html.intro-play,
+html.intro-play body {
+  background: #000;
+}
+html.intro-play body {
+  overflow: hidden;
+}
+
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The viewfinder: black, with the name in the middle. Removed the moment the shutter closes. */
+.intro-scene {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(70% 55% at 50% 50%, #141414, #000 70%);
+}
+
+/* The name, exactly as the logo sets it: wide, heavy, the i-dot a lens ring. It hunts for focus, then snaps sharp. */
+.intro-word {
+  position: relative;
+  font-family: "Pictalog Intro", ui-sans-serif, system-ui, sans-serif;
+  font-size: min(20vw, 160px);
+  font-weight: 820;
+  font-stretch: 125%;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: #fff;
+  white-space: nowrap;
+  animation: intro-focus 1.05s cubic-bezier(0.3, 0.7, 0.2, 1) 0.35s both;
+}
+@keyframes intro-focus {
+  0% { opacity: 0; filter: blur(18px); transform: scale(1.07); }
+  30% { opacity: 1; filter: blur(4px); transform: scale(1.01); }
+  55% { filter: blur(9px); transform: scale(1.03); }
+  80% { filter: blur(1.5px); transform: scale(1); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+.intro-i {
+  position: relative;
+  display: inline-block;
+}
+/* The lens ring turns like a focus ring while the name sharpens, dashed until it locks. */
+.intro-lens {
+  position: absolute;
+  left: calc(50% + 0.0225em);
+  top: 0.16em;
+  width: 0.27em;
+  height: 0.27em;
+  margin-left: -0.135em;
+  box-sizing: border-box;
+  border: 0.075em dashed #fff;
+  border-radius: 50%;
+  animation: intro-ring 1.05s cubic-bezier(0.3, 0.7, 0.2, 1) 0.35s both;
+}
+@keyframes intro-ring {
+  from { transform: rotate(-200deg); }
+  to { transform: rotate(0); }
+}
+.intro-locked .intro-lens {
+  border-style: solid;
+}
+
+/* Focus brackets: they start at the corners of the screen and close in on the name (the box is set by intro.js). */
+.intro-frame {
+  position: absolute;
+  top: 9vmin;
+  left: 9vmin;
+  width: calc(100% - 18vmin);
+  height: calc(100% - 18vmin);
+  opacity: 0;
+  animation: intro-appear 0.45s ease-out 0.15s forwards;
+  transition:
+    top 0.4s cubic-bezier(0.2, 0.9, 0.2, 1),
+    left 0.4s cubic-bezier(0.2, 0.9, 0.2, 1),
+    width 0.4s cubic-bezier(0.2, 0.9, 0.2, 1),
+    height 0.4s cubic-bezier(0.2, 0.9, 0.2, 1);
+  --arm: min(7vmin, 34px);
+  --line: rgba(255, 255, 255, 0.85);
+  background:
+    linear-gradient(var(--line), var(--line)) top left / var(--arm) 2px,
+    linear-gradient(var(--line), var(--line)) top left / 2px var(--arm),
+    linear-gradient(var(--line), var(--line)) top right / var(--arm) 2px,
+    linear-gradient(var(--line), var(--line)) top right / 2px var(--arm),
+    linear-gradient(var(--line), var(--line)) bottom left / var(--arm) 2px,
+    linear-gradient(var(--line), var(--line)) bottom left / 2px var(--arm),
+    linear-gradient(var(--line), var(--line)) bottom right / var(--arm) 2px,
+    linear-gradient(var(--line), var(--line)) bottom right / 2px var(--arm);
+  background-repeat: no-repeat;
+}
+@keyframes intro-appear {
+  to { opacity: 1; }
+}
+/* Locked: two quick blinks, like a camera confirming focus. */
+.intro-locked .intro-frame {
+  --line: #fff;
+  animation: intro-blink 0.32s steps(1) 2;
+  opacity: 1;
+}
+@keyframes intro-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+/* Still waiting for the app: the brackets breathe until it is ready. */
+.intro-waiting .intro-frame {
+  animation: intro-breathe 1.2s ease-in-out infinite;
+}
+@keyframes intro-breathe {
+  50% { opacity: 0.35; }
+}
+
+/* The aperture (drawn by intro.js) and the flash when the shutter fires. */
+.intro-iris {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.intro-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+.intro-flash.intro-fire {
+  animation: intro-flash 0.32s ease-out;
+}
+@keyframes intro-flash {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+/* With "reduce motion" on: the name appears sharp, then the app fades in (intro.js skips the aperture). */
+@media (prefers-reduced-motion: reduce) {
+  .intro-word,
+  .intro-lens,
+  .intro-frame,
+  .intro-locked .intro-frame,
+  .intro-waiting .intro-frame {
+    animation: none;
+    opacity: 1;
+    transition: none;
+  }
+  #intro {
+    transition: opacity 0.4s ease;
+  }
+  #intro.intro-out {
+    opacity: 0;
+  }
+}

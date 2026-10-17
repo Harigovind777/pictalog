@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import * as apiClient from './api'
+import { markAppReady } from './intro'
 import type { User } from './types'
 
 type AuthContextValue = {
@@ -26,6 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const setUser = useCallback((user: User) => queryClient.setQueryData(['me'], user), [queryClient])
+  const loading = hasToken && isLoading
+
+  // Once we know who's signed in, the first real screen can render: let the launch intro go.
+  useEffect(() => {
+    if (!loading) markAppReady()
+  }, [loading])
 
   useEffect(() => {
     const signedOut = () => queryClient.clear()
@@ -36,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user: apiClient.getToken() ? (data ?? null) : null,
-      loading: hasToken && isLoading,
+      loading,
       setUser,
       async login(email, password) {
         const { token, user } = await apiClient.login(email, password)
@@ -53,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.clear()
       },
     }),
-    [data, hasToken, isLoading, queryClient, setUser],
+    [data, loading, queryClient, setUser],
   )
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

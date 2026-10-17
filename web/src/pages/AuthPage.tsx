@@ -1,10 +1,17 @@
+import { ArrowRight } from 'lucide-react'
+import { motion } from 'motion/react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
+import { SectionLabel } from '@/components/SectionLabel'
 import { Wordmark } from '@/components/Wordmark'
+import { ThreeDMarquee } from '@/components/ui/3d-marquee'
 import { Button } from '@/components/ui/button'
+import { ContainerTextFlip } from '@/components/ui/container-text-flip'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/lib/auth'
+import { fadeInUp, stagger } from '@/lib/motion'
+import { GALLERY } from '@/lib/showcase'
 
 export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const { user, login, signup } = useAuth()
@@ -34,17 +41,44 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
 
   const isSignup = mode === 'signup'
   return (
-    <main className="grid min-h-svh lg:grid-cols-[1.1fr_1fr]">
-      <section className="flex flex-col justify-between px-6 py-8 sm:px-12 lg:py-12">
-        <Wordmark className="text-2xl" />
-        <div className="mx-auto w-full max-w-sm py-12">
-          <h1 className="text-3xl font-semibold">{isSignup ? 'Create your company account' : 'Sign in'}</h1>
-          <p className="mt-2 text-muted-foreground">
-            {isSignup
-              ? 'Upload a product list and get a catalog with a photo for every product.'
-              : 'Welcome back. Your catalogs are where you left them.'}
-          </p>
-          <form onSubmit={submit} className="mt-8 grid gap-5">
+    <main className="grid min-h-svh lg:grid-cols-[1.1fr_0.9fr]">
+      {/* On phones the wall of products is a band across the top. */}
+      {/* Bleeds under the phone's side status area: it's background, not content. */}
+      <div
+        className="dot-pattern relative mr-[calc(env(safe-area-inset-right)*-1)] ml-[calc(env(safe-area-inset-left)*-1)] h-60 overflow-hidden bg-ink lg:hidden"
+        aria-hidden
+      >
+        <ProductWall />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-sweep to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-ink/90 to-transparent" />
+        <Wordmark className="absolute top-[calc(env(safe-area-inset-top)+1.25rem)] left-[calc(env(safe-area-inset-left)+1.25rem)] text-2xl text-white" />
+      </div>
+
+      <section className="flex flex-col gap-10 px-5 pb-8 sm:px-12 lg:py-12">
+        <Wordmark className="hidden text-2xl lg:inline-flex" />
+        <motion.div variants={stagger} initial="hidden" animate="visible" className="mx-auto grid w-full max-w-md gap-8 lg:my-auto">
+          <motion.div variants={fadeInUp} className="grid gap-5">
+            <SectionLabel live>AI product photos</SectionLabel>
+            {isSignup ? (
+              <h1 className="font-display text-[2.6rem] leading-[1.12] sm:text-6xl">
+                Your{' '}
+                <span className="whitespace-nowrap">
+                  <ContainerTextFlip words={INPUTS} interval={2600} className="px-3" />,
+                </span>{' '}
+                photographed.
+              </h1>
+            ) : (
+              <h1 className="font-display text-[2.75rem] sm:text-6xl">
+                Welcome back
+              </h1>
+            )}
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {isSignup
+                ? 'Upload a spreadsheet, PDF or a photo of a printed list. Pictalog makes a studio photo of every product, in every size and colour, and turns them into a catalog you can share.'
+                : 'Your catalogs are where you left them.'}
+            </p>
+          </motion.div>
+          <motion.form variants={fadeInUp} onSubmit={submit} className="grid gap-4">
             {isSignup && (
               <div className="grid gap-2">
                 <Label htmlFor="company">Company name</Label>
@@ -73,51 +107,41 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
                 {error}
               </p>
             )}
-            <Button type="submit" size="lg" disabled={busy}>
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={busy}>
               {busy ? (isSignup ? 'Creating account…' : 'Signing in…') : isSignup ? 'Create account' : 'Sign in'}
+              {!busy && <ArrowRight className="transition-transform duration-200 group-hover/button:translate-x-1" />}
             </Button>
-          </form>
-          <p className="mt-6 text-sm text-muted-foreground">
+          </motion.form>
+          <motion.p variants={fadeInUp} className="text-sm text-muted-foreground">
             {isSignup ? 'Already have an account? ' : 'New to Pictalog? '}
-            <Link to={isSignup ? '/login' : '/signup'} className="font-medium text-foreground underline underline-offset-4">
+            <Link to={isSignup ? '/login' : '/signup'} className="font-semibold text-brand underline-offset-4 hover:underline">
               {isSignup ? 'Sign in' : 'Create an account'}
             </Link>
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
         <p className="text-xs text-muted-foreground">Product photos are made by AI from your product details.</p>
       </section>
-      <StudioPanel />
+
+      <aside className="dot-pattern relative hidden overflow-hidden bg-ink lg:block" aria-hidden>
+        <ProductWall />
+        <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink/80 to-transparent px-10 pt-24 pb-10 text-white/70">
+          Every photo here was made by Pictalog from one row of a price list.
+        </p>
+      </aside>
     </main>
   )
 }
 
-/** The right half: a lit studio sweep with a small contact sheet of what the app makes. */
-function StudioPanel() {
-  const cells = [
-    { label: 'Cotton tee, red, M', status: 'ready' },
-    { label: 'Steel bottle, 1 L', status: 'light' },
-    { label: 'SKU-10023', status: 'grey' },
-    { label: 'Ceramic mug, 350 ml', status: 'ready' },
-  ] as const
+const INPUTS = ['price list', 'spreadsheet', 'PDF', 'Word file']
+
+/** Aceternity's 3D marquee: a slowly drifting wall of real Pictalog photos, the only colour on a black wall. */
+function ProductWall() {
   return (
-    <aside className="relative hidden overflow-hidden bg-tile lg:flex lg:items-center lg:justify-center" aria-hidden>
-      <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_30%,color-mix(in_srgb,var(--amber)_16%,transparent),transparent_70%)]" />
-      <div className="relative grid w-[min(28rem,80%)] grid-cols-2 gap-4">
-        {cells.map((cell) => (
-          <figure key={cell.label} className="grid gap-2">
-            <div
-              className={
-                cell.status === 'light'
-                  ? 'studio-light aspect-square rounded-md'
-                  : cell.status === 'grey'
-                    ? 'grey-card aspect-square rounded-md'
-                    : 'aspect-square rounded-md bg-sweep'
-              }
-            />
-            <figcaption className="text-sm text-muted-foreground">{cell.label}</figcaption>
-          </figure>
-        ))}
-      </div>
-    </aside>
+    <>
+      <div className="absolute -top-32 -left-24 size-96 rounded-full bg-white/10 blur-[120px]" />
+      <div className="absolute -right-24 -bottom-32 size-96 rounded-full bg-white/8 blur-[120px]" />
+      {/* Pinned to the panel: the marquee's 3D stage is far bigger than the space it shows. */}
+      <ThreeDMarquee images={GALLERY} className="absolute inset-0 h-full rounded-none max-sm:h-full" />
+    </>
   )
 }

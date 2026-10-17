@@ -33,6 +33,19 @@ ln -s .venv.nosync .venv`, and the same pattern for the other two if the clone i
 
 Try it with the files in `samples/` (rebuild them with `uv run python scripts/make_samples.py`).
 
+## Run it as an iPhone app (Xcode)
+
+The iOS app (`web/ios/`, made with Capacitor) is the same app inside a native shell. With `./scripts/dev.sh` running:
+
+```bash
+npm --prefix web run ios       # build the app and copy it into the Xcode project (run again after changes)
+open web/ios/App/App.xcodeproj  # in Xcode, pick the iPhone simulator and press Run
+```
+
+The app reaches the server at `http://localhost:8000`, which on the simulator is this Mac (`web/.env.ios`). A real
+iPhone needs the server's network or hosted address there instead. Use the iOS 27.0 simulators (iPhone 17 and others);
+the iOS 27.1 runtime on this Mac only runs the iPhone Duo.
+
 ## Settings
 
 Server (`PICTALOG_…`): `DATABASE_URL`, `STORAGE_DIR`, `SECRET_KEY`, `WORKER_TOKEN`, `MAX_UPLOAD_MB` (25).
@@ -49,3 +62,9 @@ node web/e2e/flow.mjs /tmp/shots samples/apparel.xlsx   # click through the real
 ```
 
 Design: `docs/superpowers/specs/2026-10-17-pictalog-design.md`. Notes from testing the AI models: `spike/NOTES.md`.
+
+The look is black and white, with colour kept for the product photos alone: photos sit on grey studio paper and
+develop from black-and-white into colour as they come into view (tokens in `web/src/index.css`). Animated pieces come
+from [Aceternity UI](https://ui.aceternity.com/components), added with `npx shadcn@latest add @aceternity/<name>` into
+`web/src/components/ui/` and adapted there (each notes its changes). The apps open with a short intro
+(`web/public/intro/`, switched on by `VITE_INTRO=on` in `web/.env.ios`; add `?intro` to any web address to preview it).

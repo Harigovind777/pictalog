@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MotionConfig } from 'motion/react'
 import { createBrowserRouter, createHashRouter, RouterProvider, type RouteObject } from 'react-router'
 import { AppShell } from '@/components/AppShell'
 import { Toaster } from '@/components/ui/sonner'
@@ -35,10 +36,13 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <RouterProvider router={router} />
-          <Toaster position="bottom-center" />
-        </TooltipProvider>
+        {/* Animations follow the device's "reduce motion" setting. */}
+        <MotionConfig reducedMotion="user">
+          <TooltipProvider>
+            <RouterProvider router={router} />
+            <Toaster position="bottom-center" />
+          </TooltipProvider>
+        </MotionConfig>
       </AuthProvider>
     </QueryClientProvider>
   )

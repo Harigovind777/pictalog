@@ -46,7 +46,7 @@ export function ShareDialog({ catalog }: { catalog: Catalog }) {
           <DialogTitle>Share this catalog</DialogTitle>
           <DialogDescription>People with the link can view the catalog and download the PDF. They don't need an account.</DialogDescription>
         </DialogHeader>
-        <div className="flex items-center justify-between gap-4 rounded-md border bg-sweep px-4 py-3">
+        <div className="flex items-center justify-between gap-4 rounded-xl border bg-muted/50 px-4 py-3.5">
           <Label htmlFor="share-switch">Anyone with the link can view</Label>
           <Switch
             id="share-switch"
@@ -56,9 +56,9 @@ export function ShareDialog({ catalog }: { catalog: Catalog }) {
           />
         </div>
         {catalog.share_enabled && link && (
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Input readOnly value={link} aria-label="Share link" onFocus={(e) => e.target.select()} />
-            <Button onClick={copy}>{typeof navigator.share === 'function' ? 'Share link' : 'Copy link'}</Button>
+            <Button size="lg" onClick={copy}>{typeof navigator.share === 'function' ? 'Share link' : 'Copy link'}</Button>
           </div>
         )}
       </DialogContent>

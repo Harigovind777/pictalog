@@ -20,9 +20,9 @@ export function MappingRow({ headers, mapping, sample, disabled, onChange }: Pro
       {headers.map((header) => {
         const field = mapping[header] ?? null
         return (
-          <div key={header} className="grid w-48 shrink-0 content-start gap-2 rounded-lg bg-tile p-3">
+          <div key={header} className="grid w-52 shrink-0 content-start gap-3 rounded-2xl border bg-card p-4 shadow-sm">
             <div className="grid gap-0.5">
-              <p className="truncate font-medium" title={header}>
+              <p className="truncate font-semibold" title={header}>
                 {header}
               </p>
               <p className="truncate text-sm text-muted-foreground" title={sample[header]}>

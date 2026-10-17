@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { CatalogBrowser } from '@/components/CatalogBrowser'
 import { useHelperOnline } from '@/components/HelperStatus'
+import { SectionLabel } from '@/components/SectionLabel'
 import { ShareDialog } from '@/components/ShareDialog'
 import { UploadButton, UploadDropzone } from '@/components/UploadButton'
 import {
@@ -20,6 +21,7 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { deleteCatalog, getCatalog, pdfUrl, regenerate, updateCatalog, uploadVariantPhoto } from '@/lib/api'
 import { imageProgress, isWorking } from '@/lib/catalog'
+import { paperFor } from '@/lib/paper'
 import { downloadWithAuth } from '@/lib/links'
 import type { Catalog } from '@/lib/types'
 
@@ -58,11 +60,11 @@ export function CatalogView() {
   if (error) return <p className="mx-auto max-w-7xl px-4 py-12 text-destructive sm:px-6">{error.message}</p>
   if (!catalog) {
     return (
-      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-12 sm:px-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <main className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14">
+        <Skeleton className="h-14 w-72 rounded-2xl" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="aspect-square" />
+            <Skeleton key={i} className="aspect-square rounded-[1.25rem]" />
           ))}
         </div>
       </main>
@@ -72,6 +74,7 @@ export function CatalogView() {
   const variantCount = catalog.products.reduce((n, p) => n + p.variants.length, 0)
   const progress = imageProgress(catalog.counts)
   const making = progress.done < progress.total && isWorking(catalog.counts)
+  const paper = paperFor(catalog.id)
 
   async function downloadPdf() {
     try {
@@ -82,10 +85,13 @@ export function CatalogView() {
   }
 
   return (
-    <main className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 sm:py-12">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-semibold sm:text-4xl">{catalog.name}</h1>
+    <main className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-14">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="grid gap-4">
+          <SectionLabel live={making && helperOnline !== false}>
+            {making ? (helperOnline === false ? 'Waiting for your Mac' : 'Making images') : catalog.share_enabled ? 'Shared' : 'Catalog'}
+          </SectionLabel>
+          <h1 className="font-display text-[2.75rem] break-words sm:text-7xl">{catalog.name}</h1>
           <p className="text-muted-foreground">
             {catalog.products.length === 0
               ? 'No products yet'
@@ -94,8 +100,8 @@ export function CatalogView() {
           </p>
         </div>
         {catalog.products.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <UploadButton catalogId={id} label="Upload updated file" />
+          <div className="flex flex-wrap gap-1.5 max-sm:[&>button]:px-3 sm:gap-2">
+            <UploadButton catalogId={id} label="Upload new file" shortLabel="Upload" />
             <ShareDialog catalog={catalog} />
             <Button variant="outline" onClick={downloadPdf}>
               <Download />
@@ -107,14 +113,17 @@ export function CatalogView() {
       </div>
 
       {making && (
-        <div className="grid max-w-md gap-2" role="status">
+        <div className="grid max-w-md gap-2.5 rounded-2xl border bg-card p-4 shadow-sm" role="status">
           <div className="flex justify-between text-sm">
-            <span>{helperOnline === false ? 'Waiting for the image helper on your Mac' : 'Making images'}</span>
-            <span className="tabular-nums text-muted-foreground">
+            <span className="font-medium">{helperOnline === false ? 'Waiting for the image helper on your Mac' : 'Making images'}</span>
+            <span className="text-muted-foreground">
               {progress.done} of {progress.total}
             </span>
           </div>
-          <Progress value={(progress.done / progress.total) * 100} className="h-1.5 [&>[data-slot=progress-indicator]]:bg-amber" />
+          <Progress
+            value={(progress.done / progress.total) * 100}
+            className="h-2 bg-muted [&>[data-slot=progress-indicator]]:bg-brand-gradient [&>[data-slot=progress-indicator]]:shadow-accent"
+          />
         </div>
       )}
 
@@ -124,6 +133,7 @@ export function CatalogView() {
         <CatalogBrowser
           products={catalog.products}
           currency={catalog.currency}
+          paper={paper}
           helperOnline={helperOnline}
           onRegenerate={(variantId) => regen.mutate(variantId)}
           onUpload={(variantId, file) => photo.mutate({ variantId, file })}
@@ -201,10 +211,10 @@ function EditCatalogDialog({ catalog, open, onOpenChange }: { catalog: Catalog; 
           </div>
           <div className="grid gap-2">
             <Label htmlFor="edit-currency">Currency symbol</Label>
-            <Input id="edit-currency" value={currency} onChange={(e) => setCurrency(e.target.value)} maxLength={8} className="w-24" />
+            <Input id="edit-currency" value={currency} onChange={(e) => setCurrency(e.target.value)} maxLength={8} className="w-28" />
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={mutation.isPending || !name.trim()}>
+            <Button type="submit" size="lg" disabled={mutation.isPending || !name.trim()}>
               Save
             </Button>
           </DialogFooter>

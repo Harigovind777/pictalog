@@ -7,7 +7,10 @@ import { useHelperOnline } from '@/components/HelperStatus'
 import { ItemsGrid } from '@/components/ItemsGrid'
 import { MappingRow } from '@/components/MappingRow'
 import { UploadButton } from '@/components/UploadButton'
+import { SectionLabel } from '@/components/SectionLabel'
 import { Button } from '@/components/ui/button'
+import { ImageGenerationLoader } from '@/components/ui/image-generation-loader'
+import { StatefulButton } from '@/components/ui/stateful-button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { applyImport, getImport, setMapping } from '@/lib/api'
 import { hasEnoughDetail, removeItem, updateItem } from '@/lib/items'
@@ -48,8 +51,6 @@ export function ImportCheck() {
     onSuccess: (catalog) => {
       queryClient.setQueryData(['catalog', catalogId], catalog)
       void queryClient.invalidateQueries({ queryKey: ['catalogs'] })
-      toast.success('Catalog updated')
-      navigate(`/catalogs/${catalogId}`)
     },
     onError: (e) => toast.error(e.message),
   })
@@ -74,9 +75,22 @@ export function ImportCheck() {
     return (
       <Page>
         <div className="grid max-w-xl gap-6">
-          <div className="studio-light aspect-[3/1] rounded-lg" />
-          <div className="grid gap-2">
-            <h1 className="text-3xl font-semibold">Reading {imp.filename}</h1>
+          <div className="paper relative aspect-[3/1] overflow-hidden rounded-2xl border shadow-md">
+            {helperOnline !== false && (
+              <ImageGenerationLoader
+                colors={['#a3a3a3', '#0a0a0a']}
+                text="Reading"
+                cellSize={4}
+                gap={2}
+                bandHeight={64}
+                duration={3600}
+                effect="shimmer"
+              />
+            )}
+          </div>
+          <div className="grid gap-4">
+            <SectionLabel live={helperOnline !== false}>{helperOnline === false ? 'Waiting' : 'AI at work'}</SectionLabel>
+            <h1 className="font-display text-4xl break-words sm:text-5xl">Reading {imp.filename}</h1>
             <p className="text-muted-foreground">
               {helperOnline === false
                 ? "The image helper on your Mac is off. It will read this file as soon as it's back, and this page updates by itself."
@@ -92,7 +106,7 @@ export function ImportCheck() {
     return (
       <Page>
         <div className="grid max-w-xl gap-4">
-          <h1 className="text-3xl font-semibold">We couldn't read {imp.filename}</h1>
+          <h1 className="font-display text-4xl break-words sm:text-5xl">We couldn't read {imp.filename}</h1>
           <p className="text-muted-foreground">{imp.error}</p>
           <div className="flex gap-2">
             <UploadButton catalogId={catalogId} label="Try another file" />
@@ -108,7 +122,7 @@ export function ImportCheck() {
   if (imp.status === 'applied') {
     return (
       <Page>
-        <h1 className="text-3xl font-semibold">This file has already been added</h1>
+        <h1 className="font-display text-4xl sm:text-5xl">This file has already been added</h1>
         <Button asChild className="w-fit">
           <Link to={`/catalogs/${catalogId}`}>Open catalog</Link>
         </Button>
@@ -121,8 +135,11 @@ export function ImportCheck() {
   return (
     <>
       <Page>
-        <div className="grid gap-2">
-          <h1 className="text-3xl font-semibold sm:text-4xl">Check what we found</h1>
+        <div className="grid gap-4">
+          <SectionLabel>Step 2 of 2</SectionLabel>
+          <h1 className="font-display text-[2.75rem] sm:text-6xl">
+            Check what we found
+          </h1>
           <p className="text-muted-foreground">
             {rows.length} {rows.length === 1 ? 'row' : 'rows'} from {imp.filename}
             {imp.method === 'ai' && ', read by AI. Please check names and prices.'}
@@ -134,7 +151,7 @@ export function ImportCheck() {
         {imp.method === 'table' && (
           <section className="grid gap-3">
             <div className="grid gap-1">
-              <h2 className="text-lg font-semibold">Columns</h2>
+              <h2 className="text-xl font-semibold tracking-[-0.01em]">Columns</h2>
               <p className="text-sm text-muted-foreground">
                 Fix any column we guessed wrong.{edited && ' Changing a column resets the edits you made below.'}
               </p>
@@ -150,7 +167,7 @@ export function ImportCheck() {
         )}
 
         <section className="grid gap-3 pb-24">
-          <h2 className="text-lg font-semibold">Products</h2>
+          <h2 className="text-xl font-semibold tracking-[-0.01em]">Products</h2>
           <ItemsGrid
             items={rows}
             onChange={(index, field, value) => {
@@ -165,14 +182,21 @@ export function ImportCheck() {
         </section>
       </Page>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-sweep/95 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-white/85 px-safe pb-safe shadow-[0_-8px_30px_-12px_rgb(15_23_42/0.15)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <p className="text-sm text-muted-foreground">
             {withPhoto} of {rows.length} will get a photo
           </p>
-          <Button size="lg" disabled={apply.isPending || rows.length === 0} onClick={() => apply.mutate()}>
+          <StatefulButton
+            disabled={rows.length === 0}
+            onClick={() => apply.mutateAsync()}
+            onDone={() => {
+              toast.success('Catalog updated')
+              navigate(`/catalogs/${catalogId}`)
+            }}
+          >
             {apply.isPending ? 'Updating catalog…' : 'Update catalog'}
-          </Button>
+          </StatefulButton>
         </div>
       </div>
     </>
@@ -180,5 +204,5 @@ export function ImportCheck() {
 }
 
 function Page({ children }: { children: React.ReactNode }) {
-  return <main className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 sm:py-12">{children}</main>
+  return <main className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-14">{children}</main>
 }
