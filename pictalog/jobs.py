@@ -2,7 +2,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from pictalog.catalog.prompt import build_prompt, seed_for
-from pictalog.models import Job, Variant
+from pictalog.models import Import, Job, Variant
 
 
 def cancel_image_jobs(db: Session, variant_id: int) -> None:
@@ -27,5 +27,16 @@ def enqueue_image(db: Session, variant: Variant) -> Job:
         },
     )
     variant.image_status = "queued"
+    db.add(job)
+    return job
+
+
+def enqueue_extract(db: Session, imp: Import, text: str | None) -> Job:
+    """Ask the image helper's AI to read a file that has no usable table (free text, photos, scans)."""
+    job = Job(
+        kind="extract",
+        import_id=imp.id,
+        payload={"import_id": imp.id, "filename": imp.filename, "text": text},
+    )
     db.add(job)
     return job

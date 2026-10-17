@@ -167,3 +167,24 @@ class ExtractedItem(BaseModel):
     description: str | None = None
     image_url: str | None = None
     extra: dict[str, str] = {}
+
+
+class MappingIn(BaseModel):
+    mapping: dict[str, ItemField | None]
+
+
+class ApplyIn(BaseModel):
+    items: list[ExtractedItem]
+
+
+class ImportOut(BaseModel):
+    id: int
+    catalog_id: int
+    status: str
+    method: str | None
+    filename: str
+    headers: list[str]
+    mapping: dict[str, ItemField | None]
+    items: list[ExtractedItem]
+    diff: dict | None
+    error: str | None
