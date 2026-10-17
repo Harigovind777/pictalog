@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from pictalog.api.deps import read_upload, store_image
 from pictalog.auth import create_token, current_user, hash_password, verify_password
 from pictalog.db import get_db
 from pictalog.models import User
@@ -42,5 +43,15 @@ def me(user: User = Depends(current_user)) -> UserOut:
 @router.patch("/me")
 def update_me(body: UserUpdate, user: User = Depends(current_user), db: Session = Depends(get_db)) -> UserOut:
     user.company_name = body.company_name.strip()
+    db.commit()
+    return UserOut.of(user)
+
+
+@router.post("/me/logo")
+async def upload_logo(
+    file: UploadFile, request: Request, user: User = Depends(current_user), db: Session = Depends(get_db)
+) -> UserOut:
+    full_key, _ = store_image(request, await read_upload(file, request))
+    user.logo_key = full_key
     db.commit()
     return UserOut.of(user)
