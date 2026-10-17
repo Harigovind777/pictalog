@@ -1,6 +1,7 @@
 from collections import Counter
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -145,3 +146,24 @@ class CatalogOut(BaseModel):
             products=[ProductOut.of(p) for p in catalog.products],
             counts=dict(counts),
         )
+
+
+ItemField = Literal[
+    "name", "sku", "price", "size", "colour", "material", "brand", "category", "description", "image_url"
+]
+
+
+class ExtractedItem(BaseModel):
+    """One catalog row (one variant) as read from a file. Shared JSON shape with the image helper."""
+
+    name: str | None = None
+    sku: str | None = None
+    price_text: str | None = None
+    size: str | None = None
+    colour: str | None = None
+    material: str | None = None
+    brand: str | None = None
+    category: str | None = None
+    description: str | None = None
+    image_url: str | None = None
+    extra: dict[str, str] = {}
