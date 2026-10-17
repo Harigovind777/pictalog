@@ -76,3 +76,13 @@ def test_reader_ocr_each_pdf_page(settings):
     rec = Recorder(handler)
     DocumentReader(settings, transport=rec.transport).read(text=None, file=buf.getvalue(), filename="scan.pdf")
     assert [r.url.path for r in rec.requests] == ["/api/generate", "/api/generate", "/api/chat"]
+
+
+def test_reader_drops_invented_codes_and_placeholders(settings):
+    rec = Recorder(lambda r: chat_answer([
+        {"name": "Teak Table", "sku": "TEAK_TABLE_01", "colour": "not specified", "size": "N/A", "price_text": "₹48,000"},
+        {"name": "Cane Chair", "sku": "CC-7", "material": "unknown"},
+    ]))
+    text = "Teak table for ₹48,000. Cane chair (code CC-7)."
+    items = DocumentReader(settings, transport=rec.transport).read(text=text, file=None, filename="a.docx")
+    assert items == [{"name": "Teak Table", "price_text": "₹48,000"}, {"name": "Cane Chair", "sku": "CC-7"}]

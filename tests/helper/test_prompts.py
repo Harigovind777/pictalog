@@ -55,3 +55,9 @@ def test_can_be_turned_off(settings):
     writer = PromptWriter(settings.model_copy(update={"rewrite_prompts": False}), transport=rec.transport)
     assert writer.prompt_for(JOB) == JOB["prompt"]
     assert rec.requests == []
+
+
+def test_keeps_only_the_first_sentence(settings):
+    rec = Recorder(lambda r: reply('Black peppercorns, small, dark brown, 250 grams. "Tellicherry" refers to a variety.'))
+    prompt = PromptWriter(settings, transport=rec.transport).prompt_for(JOB)
+    assert prompt == "Professional studio product photograph of Black peppercorns, small, dark brown, 250 grams. Single product."

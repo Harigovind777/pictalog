@@ -15,11 +15,12 @@ FRAME = "Professional studio product photograph of"
 MAX_WORDS = 60
 
 INSTRUCTIONS = (
-    "You help a product photographer. Rewrite the product below as one short English phrase describing what the "
-    "object physically looks like: what kind of object it is, its shape, colour, material and size. Translate every "
+    "You help a product photographer. Rewrite the product below as one short English phrase that starts with the "
+    "product's everyday English name (for example 'black peppercorns', 'green cardamom pods', 'teapot'), then says "
+    "what it looks like: shape, colour, material and size. Translate every "
     "non-English word, and explain regional product names (for example 'kasavu mundu' is a white handwoven cotton "
     "wrap with a gold border). Leave out brand names, prices, product codes and any writing that would be printed on "
-    "the product. Reply with the phrase only, under 40 words."
+    "the product. Reply with the phrase only, under 40 words, with no notes or explanations."
 )
 
 
@@ -53,7 +54,9 @@ class PromptWriter:
         except Exception as e:  # never block a photo on this: fall back to the original wording
             log.warning("couldn't rewrite %r: %s", subject, e)
             return None
-        text = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip().strip('"').strip().rstrip(".")
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip().strip('"').strip()
+        # The phrase is one sentence; anything after it is the model explaining itself.
+        text = re.split(r"\.\s|\n|\s\(", text, maxsplit=1)[0].strip().rstrip(".")
         if not text or len(text.split()) > MAX_WORDS:
             return None
         if re.match(r"(A|An|The) [a-z]", text):

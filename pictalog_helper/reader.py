@@ -16,6 +16,7 @@ register_heif_opener()
 
 FIELDS = ["name", "sku", "price_text", "size", "colour", "material", "brand", "category", "description"]
 CHUNK_CHARS = 6000
+PLACEHOLDERS = {"not specified", "unspecified", "unknown", "n/a", "na", "none", "null", "-", "—", "not available", "not mentioned"}
 MAX_OCR_SIDE = 2000
 
 SCHEMA = {
@@ -32,7 +33,7 @@ SCHEMA = {
 INSTRUCTIONS = (
     "You turn product catalogs into rows. Return JSON {\"items\": [...]} with one item per product variant: "
     "if a product comes in several sizes or colours with their own price, make one item for each. "
-    "Fields: name, sku (product code), price_text (the price exactly as written, with its currency), size, colour, "
+    "Fields: name, sku (only a product code printed in the text), price_text (the price exactly as written, with its currency), size, colour, "
     "material, brand, category, description (one short sentence about the product). "
     "Only use information that is in the text. Leave out fields you can't find. Never invent products or prices. "
     "Skip headings, addresses, phone numbers and terms and conditions."
@@ -133,7 +134,13 @@ class DocumentReader:
         for row in raw if isinstance(raw, list) else []:
             if not isinstance(row, dict):
                 continue
-            item = {f: str(row[f]).strip() for f in FIELDS if row.get(f) not in (None, "") and str(row[f]).strip()}
+            item = {
+                f: str(row[f]).strip()
+                for f in FIELDS
+                if row.get(f) is not None and str(row[f]).strip().lower() not in PLACEHOLDERS | {""}
+            }
+            if "sku" in item and item["sku"].lower() not in chunk.lower():
+                del item["sku"]  # the model made up a code that isn't in the document
             if item.get("name") or item.get("description"):
                 items.append(item)
         return items
