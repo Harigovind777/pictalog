@@ -13,6 +13,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 OUT = Path(__file__).resolve().parent.parent / "samples"
@@ -71,7 +73,15 @@ def electronics_pdf() -> None:
         ],
         repeatRows=1,
     )
-    table.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.grey), ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold")]))
+    # A font with a ₹ glyph; the built-in Helvetica would write a wrong character into the PDF.
+    fonts = OUT.parent / "pictalog" / "fonts"
+    pdfmetrics.registerFont(TTFont("DejaVuSans", str(fonts / "DejaVuSans.ttf")))
+    pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", str(fonts / "DejaVuSans-Bold.ttf")))
+    table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans"),
+        ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans-Bold"),
+    ]))
     SimpleDocTemplate(buf, pagesize=A4).build([Paragraph("Volt Gadgets — dealer price list", styles["Title"]), Spacer(1, 12), table])
     (OUT / "electronics.pdf").write_bytes(buf.getvalue())
 

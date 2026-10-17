@@ -28,6 +28,15 @@ export function ImageSlot({ variant, alt, helperOnline, readOnly, onGenerate, on
     )
   }
 
+  if (readOnly) {
+    // Viewers of a shared catalog don't need to know why a photo is missing.
+    return (
+      <div className={cn(base, 'grey-card grid content-end')}>
+        <p className="p-5 text-sm text-ink/70">Photo coming soon</p>
+      </div>
+    )
+  }
+
   if (variant.image_status === 'queued' || variant.image_status === 'generating') {
     const waiting = helperOnline === false
     return (

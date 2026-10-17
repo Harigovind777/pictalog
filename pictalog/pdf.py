@@ -117,7 +117,7 @@ def _footer(c: Canvas, user: User, page: int) -> None:
 
 def _cell(c: Canvas, product: Product, variant: Variant, currency: str, image: bytes | None, x: float, top: float) -> None:
     size = min(CELL_W, CELL_H - TEXT_H)
-    _draw_image(c, image, x + (CELL_W - size) / 2, top - size, size)
+    _draw_image(c, image, x, top - size, size)  # left edge lines up with the text below
     y = top - size - 6 * mm
     c.setFillColor(INK)
     c.setFont(BOLD, 11)
