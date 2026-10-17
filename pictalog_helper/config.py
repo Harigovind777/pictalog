@@ -11,7 +11,7 @@ class HelperSettings(BaseSettings):
     width: int = 768
     height: int = 768
     steps: int | None = None  # None = the model's own default
-    text_model: str = "qwen3:4b"
+    text_model: str = "qwen3:4b-instruct"  # the plain qwen3:4b tag reasons out loud and takes ~75 s
     rewrite_prompts: bool = True  # plain-English product descriptions before making photos
     ocr_model: str = "glm-ocr"
     poll_seconds: float = 3.0

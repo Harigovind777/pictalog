@@ -21,7 +21,7 @@ def test_rewrites_subject_into_plain_english(settings):
     assert prompt == "Professional studio product photograph of a blue cast-iron teapot, 1.2 litres. Single product."
     body = rec.bodies()[0]
     assert str(rec.requests[0].url) == "http://localhost:11434/api/chat"
-    assert body["model"] == "qwen3:4b" and body["think"] is False and body["options"]["temperature"] == 0
+    assert body["model"] == "qwen3:4b-instruct" and body["think"] is False and body["options"]["temperature"] == 0
     assert "Théière in Bleu" in body["messages"][-1]["content"]
 
 

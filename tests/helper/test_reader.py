@@ -33,7 +33,7 @@ def test_reader_chunks_and_merges(settings):
     assert [i["name"] for i in items] == ["Product 0", "Product 1", "Product 2"]
     body = rec.bodies()[0]
     assert str(rec.requests[0].url) == "http://localhost:11434/api/chat"
-    assert body["model"] == "qwen3:4b" and body["think"] is False and body["stream"] is False
+    assert body["model"] == "qwen3:4b-instruct" and body["think"] is False and body["stream"] is False
     assert body["options"]["temperature"] == 0
     assert body["format"]["properties"]["items"]["type"] == "array"
     assert "Product line 0" in body["messages"][-1]["content"]

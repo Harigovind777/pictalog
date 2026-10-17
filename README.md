@@ -18,7 +18,7 @@ Needs [uv](https://docs.astral.sh/uv/), Node 20+, and Homebrew's `ollama` (with 
 uv sync
 npm --prefix web install
 ollama pull x/flux2-klein:4b   # product photos
-ollama pull qwen3:4b           # reading free-text documents
+ollama pull qwen3:4b-instruct  # reading documents, plain-English product descriptions
 ollama pull glm-ocr            # reading photos and scans
 ./scripts/dev.sh               # server, app and image helper; open http://localhost:5173
 ```
