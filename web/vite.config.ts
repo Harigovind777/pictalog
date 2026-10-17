@@ -12,8 +12,11 @@ export default defineConfig({
   server: {
     host: true,
     proxy: { '/api': 'http://localhost:8000' },
+    // node_modules really lives in node_modules.nosync (kept out of iCloud), which the default ignores don't cover.
+    watch: { ignored: ['**/*.nosync/**'] },
   },
   test: {
     environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}'],
   },
 })

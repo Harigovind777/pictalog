@@ -26,6 +26,11 @@ ollama pull glm-ocr            # reading photos and scans
 `scripts/dev.sh` starts its own Ollama on port 11435 with `OLLAMA_LIBRARY_PATH=/opt/homebrew/lib`. Without that
 setting Homebrew's Ollama can't load image models (`libmlxc.dylib not found`).
 
+This folder sits in iCloud-synced Documents. The Python environment, `web/node_modules` and the app's `data` (database,
+photos, uploads) live in `.venv.nosync`, `web/node_modules.nosync` and `data.nosync`, which iCloud doesn't sync; `.venv`,
+`web/node_modules` and `data` are links to them. On a fresh clone: `UV_PROJECT_ENVIRONMENT=.venv.nosync uv sync &&
+ln -s .venv.nosync .venv`, and the same pattern for the other two if the clone is inside iCloud.
+
 Try it with the files in `samples/` (rebuild them with `uv run python scripts/make_samples.py`).
 
 ## Settings

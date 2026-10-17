@@ -1,11 +1,13 @@
 .superpowers/
-.venv/
+# Regenerated or private folders live in *.nosync folders (iCloud skips them) with plain-named links beside them.
+*.nosync
+.venv
 __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
 .env
-data/
+data
 spike/out/
-node_modules/
+node_modules
 web/dist/

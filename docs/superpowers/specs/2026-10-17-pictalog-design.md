@@ -105,7 +105,7 @@ swappable for a paid image API later without changing the app.
   optional logo head the catalog and PDF; prices are kept exactly as written plus a parsed number when possible,
   with a per-catalog currency symbol; uploads are capped at 25 MB; no password-reset email yet (needs an email
   service — later).
-- **Project location:** `~/Developer/Pictalog` — not `~/Documents`, which is iCloud-synced and breaks builds and
+- **Project location:** `~/Documents/Pictalog` (the user wants all projects in Documents). Documents is iCloud-synced, so regenerated or private folders (`.venv`, `web/node_modules`, `data`) live in `*.nosync` folders, which iCloud skips, with plain-named links beside them.
   code signing on this Mac.
 
 ## Build order
