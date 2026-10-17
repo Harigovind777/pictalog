@@ -53,6 +53,11 @@ class CatalogUpdate(BaseModel):
     currency: str | None = Field(default=None, max_length=8)
 
 
+class CoverOut(BaseModel):
+    url: str
+    generated: bool  # an AI studio photo on white, which the app places on the catalog's backdrop
+
+
 class CatalogSummary(BaseModel):
     id: int
     name: str
@@ -60,6 +65,7 @@ class CatalogSummary(BaseModel):
     product_count: int
     variant_count: int
     updated_at: datetime
+    covers: list[CoverOut]
 
     @classmethod
     def of(cls, catalog: Catalog) -> "CatalogSummary":
@@ -70,7 +76,22 @@ class CatalogSummary(BaseModel):
             product_count=len(catalog.products),
             variant_count=sum(len(p.variants) for p in catalog.products),
             updated_at=catalog.updated_at,
+            covers=covers(catalog),
         )
+
+
+def covers(catalog: Catalog, limit: int = 3) -> list[CoverOut]:
+    """Photos for the catalog's cover: the first finished photo of each of the first products that have one."""
+    found: list[CoverOut] = []
+    for product in catalog.products:
+        for v in product.variants:
+            url = file_url(v.thumb_key) or v.image_url_source
+            if v.image_status == "ready" and url:
+                found.append(CoverOut(url=url, generated=v.image_source == "generated"))
+                break
+        if len(found) == limit:
+            break
+    return found
 
 
 class VariantOut(BaseModel):
