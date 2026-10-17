@@ -7,15 +7,19 @@ import { AuthProvider } from '@/lib/auth'
 import { AuthPage } from '@/pages/AuthPage'
 import { CatalogView } from '@/pages/CatalogView'
 import { Catalogs } from '@/pages/Catalogs'
+import { ImportCheck } from '@/pages/ImportCheck'
+import { PublicCatalog } from '@/pages/PublicCatalog'
 
 const routes: RouteObject[] = [
   { path: '/login', element: <AuthPage mode="login" /> },
   { path: '/signup', element: <AuthPage mode="signup" /> },
+  { path: '/c/:token', element: <PublicCatalog /> },
   {
     element: <AppShell />,
     children: [
       { path: '/', element: <Catalogs /> },
       { path: '/catalogs/:id', element: <CatalogView /> },
+      { path: '/catalogs/:id/imports/:importId', element: <ImportCheck /> },
     ],
   },
 ]
