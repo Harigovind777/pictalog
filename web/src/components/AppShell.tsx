@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react'
+import { useRef } from 'react'
 import { Link, Navigate, Outlet } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -7,9 +7,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { assetUrl, uploadLogo } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { HelperStatus } from './HelperStatus'
 import { Wordmark } from './Wordmark'
 
-export function AppShell({ status }: { status?: ReactNode }) {
+export function AppShell() {
   const { user, loading, logout, setUser } = useAuth()
   const logoInput = useRef<HTMLInputElement>(null)
 
@@ -35,7 +36,7 @@ export function AppShell({ status }: { status?: ReactNode }) {
             <Wordmark />
           </Link>
           <div className="ml-auto flex items-center gap-2">
-            {status}
+            <HelperStatus />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 px-2">

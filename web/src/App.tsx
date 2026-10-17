@@ -5,13 +5,18 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/lib/auth'
 import { AuthPage } from '@/pages/AuthPage'
+import { CatalogView } from '@/pages/CatalogView'
+import { Catalogs } from '@/pages/Catalogs'
 
 const routes: RouteObject[] = [
   { path: '/login', element: <AuthPage mode="login" /> },
   { path: '/signup', element: <AuthPage mode="signup" /> },
   {
     element: <AppShell />,
-    children: [{ path: '/', element: <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">Your catalogs</main> }],
+    children: [
+      { path: '/', element: <Catalogs /> },
+      { path: '/catalogs/:id', element: <CatalogView /> },
+    ],
   },
 ]
 
