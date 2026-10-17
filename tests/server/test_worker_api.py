@@ -82,3 +82,11 @@ def test_helper_status_online_then_offline(client, signup, db):
     beat.last_seen_at = utcnow() - timedelta(seconds=31)
     db.commit()
     assert client.get("/api/helper/status", headers=h).json()["online"] is False
+
+
+def test_heartbeat_keeps_helper_online(client, signup):
+    h = signup()
+    assert client.post("/api/worker/heartbeat", json={"engine": "flux"}).status_code == 401
+    assert client.post("/api/worker/heartbeat", json={"engine": "flux"}, headers=W).status_code == 204
+    status = client.get("/api/helper/status", headers=h).json()
+    assert status["online"] is True and status["engine"] == "flux"

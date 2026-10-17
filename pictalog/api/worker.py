@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from pictalog.api.deps import read_upload
 from pictalog.auth import current_user
 from pictalog.db import get_db
-from pictalog.jobs import claim_next, complete_extract, complete_image, fail_job, helper_status
+from pictalog.jobs import claim_next, complete_extract, complete_image, fail_job, heartbeat, helper_status
 from pictalog.models import Import, Job, User
 from pictalog.schemas import ExtractedItem
 
@@ -60,6 +60,12 @@ def claim(body: ClaimIn, db: Session = Depends(get_db)):
     if job is None:
         return Response(status_code=204)
     return JobOut(id=job.id, kind=job.kind, payload=job.payload)
+
+
+@router.post("/worker/heartbeat", dependencies=[Depends(worker_auth)], status_code=204)
+def worker_heartbeat(body: ClaimIn, db: Session = Depends(get_db)) -> Response:
+    heartbeat(db, body.engine)
+    return Response(status_code=204)
 
 
 @router.get("/worker/jobs/{job_id}/file", dependencies=[Depends(worker_auth)])

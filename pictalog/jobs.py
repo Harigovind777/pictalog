@@ -73,6 +73,11 @@ def requeue_stale(db: Session, now: datetime | None = None) -> None:
     db.commit()
 
 
+def heartbeat(db: Session, engine: str | None, now: datetime | None = None) -> None:
+    _beat(db, now or utcnow(), engine)
+    db.commit()
+
+
 def _beat(db: Session, now: datetime, engine: str | None) -> None:
     beat = db.get(Heartbeat, 1) or Heartbeat(id=1)
     beat.last_seen_at = now
