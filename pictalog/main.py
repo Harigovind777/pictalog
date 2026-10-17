@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from pictalog.api import auth_routes, catalogs, files, imports, variants, worker
+from pictalog.api import auth_routes, catalogs, files, imports, share, variants, worker
 from pictalog.config import Settings
 from pictalog.db import Base, make_engine, make_sessionmaker
 from pictalog.storage import LocalStorage
@@ -24,6 +24,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.sessionmaker = make_sessionmaker(engine)
     app.state.storage = LocalStorage(settings.storage_dir)
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-    for module in (auth_routes, catalogs, files, imports, variants, worker):
+    for module in (auth_routes, catalogs, files, imports, share, variants, worker):
         app.include_router(module.router)
     return app
