@@ -73,7 +73,7 @@ export function ProductCard({ product, currency, helperOnline, readOnly, onRegen
       <div className="grid gap-1">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="line-clamp-2 font-medium leading-snug">{name}</h3>
-          {price && <p className="shrink-0 font-semibold tabular-nums">{price}</p>}
+          {price && <p className="shrink-0 font-semibold">{price}</p>}
         </div>
         {product.brand && <p className="text-sm text-muted-foreground">{product.brand}</p>}
       </div>

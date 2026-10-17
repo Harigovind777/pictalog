@@ -38,6 +38,11 @@ class FakeEngine:
         return b"PNGDATA"
 
 
+class FakeWriter:
+    def prompt_for(self, payload):
+        return "english: " + payload["prompt"]
+
+
 class FakeReader:
     def __init__(self):
         self.calls = []
@@ -78,3 +83,9 @@ def test_run_once_reports_failure():
     client = FakeClient({"id": 4, "kind": "image", "payload": {"prompt": "tee", "seed": 1}})
     assert run_once(client, FakeEngine(error=RuntimeError("out of memory")), FakeReader()) is True
     assert client.sent == [("fail", 4, "out of memory")]
+
+
+def test_run_once_uses_the_prompt_writer():
+    client, engine = FakeClient({"id": 5, "kind": "image", "payload": {"prompt": "tee", "seed": 9}}), FakeEngine()
+    run_once(client, engine, FakeReader(), FakeWriter())
+    assert engine.calls == [("english: tee", 9)]

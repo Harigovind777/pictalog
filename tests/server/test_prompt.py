@@ -1,4 +1,4 @@
-from pictalog.catalog.prompt import STUDIO, build_prompt, seed_for
+from pictalog.catalog.prompt import STUDIO, build_prompt, build_subject, seed_for
 from pictalog.models import Product, Variant
 
 
@@ -46,3 +46,10 @@ def test_seed_shared_by_variants():
     assert seed_for("acme|tee", 0) == seed_for("acme|tee", 0)
     assert seed_for("acme|tee", 1) == seed_for("acme|tee", 0) + 1
     assert seed_for("acme|tee", 0) != seed_for("acme|mug", 0)
+
+
+def test_build_subject_is_the_prompt_without_framing():
+    product = Product(name="Théière", category="Cuisine")
+    variant = Variant(colour="Bleu", material="Fonte", size="1,2 L")
+    assert build_subject(product, variant) == "Théière in Bleu made of Fonte, 1,2 L (Cuisine)."
+    assert build_prompt(product, variant) == f"Professional studio product photograph of {build_subject(product, variant)} {STUDIO}"

@@ -9,12 +9,13 @@ import httpx
 from pictalog_helper.client import ServerClient
 from pictalog_helper.config import HelperSettings
 from pictalog_helper.engines import CachingEngine, ImageEngine, OllamaImageEngine
+from pictalog_helper.prompts import PromptWriter
 from pictalog_helper.reader import DocumentReader
 
 log = logging.getLogger("pictalog_helper")
 
 
-def run_once(client: ServerClient, engine: ImageEngine, reader: DocumentReader) -> bool:
+def run_once(client: ServerClient, engine: ImageEngine, reader: DocumentReader, writer: PromptWriter | None = None) -> bool:
     """Do one job if there is one. Returns False when the queue was empty."""
     job = client.claim()
     if job is None:
@@ -23,7 +24,8 @@ def run_once(client: ServerClient, engine: ImageEngine, reader: DocumentReader) 
     started = time.monotonic()
     try:
         if job["kind"] == "image":
-            client.send_image(job_id, engine.generate(payload["prompt"], payload["seed"]))
+            prompt = writer.prompt_for(payload) if writer else payload["prompt"]
+            client.send_image(job_id, engine.generate(prompt, payload["seed"]))
             log.info("image for product %s made in %.0fs", payload.get("variant_id"), time.monotonic() - started)
         elif job["kind"] == "extract":
             text = payload.get("text")
@@ -55,6 +57,7 @@ def main() -> None:
     client = ServerClient(settings)
     engine = CachingEngine(OllamaImageEngine(settings))
     reader = DocumentReader(settings)
+    writer = PromptWriter(settings)
     log.info("Pictalog image helper: %s → %s (images: %s, text: %s)",
              settings.ollama_url, settings.server_url, settings.image_model, settings.text_model)
     stop = threading.Event()
@@ -63,7 +66,7 @@ def main() -> None:
     try:
         while True:
             try:
-                worked = run_once(client, engine, reader)
+                worked = run_once(client, engine, reader, writer)
                 if offline:
                     log.info("connected to the Pictalog server again")
                 offline = False

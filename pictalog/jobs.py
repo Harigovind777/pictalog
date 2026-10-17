@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import case, select, update
 from sqlalchemy.orm import Session
 
-from pictalog.catalog.prompt import build_prompt, seed_for
+from pictalog.catalog.prompt import STUDIO, build_prompt, build_subject, seed_for
 from pictalog.images import save_image
 from pictalog.models import Heartbeat, Import, Job, Variant, utcnow
 from pictalog.schemas import ExtractedItem
@@ -27,6 +27,9 @@ def enqueue_image(db: Session, variant: Variant) -> Job:
         payload={
             "variant_id": variant.id,
             "prompt": build_prompt(product, variant),
+            # The helper may rewrite the subject into plain English before adding the studio wording back.
+            "subject": build_subject(product, variant),
+            "studio": STUDIO,
             "seed": seed_for(product.group_key, variant.seed_offset),
         },
     )

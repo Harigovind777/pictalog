@@ -48,6 +48,7 @@ def test_apply_new_items_queue_images(db, catalog):
     assert job.kind == "image" and job.variant_id == vs[0].id
     assert job.payload["prompt"].startswith("Professional studio product photograph of Tee. ")
     assert job.payload["seed"] == queued_jobs(db)[1].payload["seed"]  # same product, same seed
+    assert job.payload["subject"] == "Tee." and job.payload["studio"].startswith("Single product")
 
 
 def test_apply_provided_image_url(db, catalog):

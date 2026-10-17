@@ -18,12 +18,13 @@ def _visible_size(size: str | None) -> str | None:
     return None
 
 
-def build_prompt(product: Product, variant: Variant) -> str:
+def build_subject(product: Product, variant: Variant) -> str:
+    """What the product is and looks like, e.g. "Classic Tee by Acme in Red made of Cotton (Apparel). Soft cotton."."""
     description = (product.description or "").strip()[:300]
     subject = (product.name or "").strip()
     if not subject:
         subject, description = description, ""
-    text = f"Professional studio product photograph of {subject}"
+    text = subject
     if product.brand:
         text += f" by {product.brand}"
     if variant.colour:
@@ -37,7 +38,11 @@ def build_prompt(product: Product, variant: Variant) -> str:
     text += "."
     if description:
         text += f" {description.rstrip('.')}."
-    return f"{text} {STUDIO}"
+    return text
+
+
+def build_prompt(product: Product, variant: Variant) -> str:
+    return f"Professional studio product photograph of {build_subject(product, variant)} {STUDIO}"
 
 
 def seed_for(group_key: str, offset: int) -> int:
