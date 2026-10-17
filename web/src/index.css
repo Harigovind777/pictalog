@@ -8,6 +8,7 @@
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+    --color-ink: var(--ink);
     --color-sweep: var(--sweep);
     --color-tile: var(--tile);
     --color-amber: var(--amber);
@@ -145,7 +146,7 @@
 .grey-card::after {
   content: "";
   position: absolute;
-  inset: 10%;
+  inset: 8px;
   pointer-events: none;
   --mark: color-mix(in srgb, var(--greycard) 80%, transparent);
   background:

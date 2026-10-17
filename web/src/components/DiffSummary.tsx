@@ -21,7 +21,7 @@ function Group({ count, label, names, tone }: { count: number; label: string; na
 export function DiffSummary({ diff }: { diff: Diff }) {
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <Group count={diff.new} label={diff.new === 1 ? 'new product' : 'new products'} names={diff.new_names} tone="" />
+      <Group count={diff.new} label={diff.new === 1 ? 'new row' : 'new rows'} names={diff.new_names} tone="" />
       <Group count={diff.changed} label="changed" names={diff.changed_names} tone="" />
       <Group count={diff.removed} label="no longer in the file, will be removed" names={diff.removed_names} tone="text-destructive" />
       {diff.new + diff.changed + diff.removed === 0 && (

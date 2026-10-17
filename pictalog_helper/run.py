@@ -50,6 +50,7 @@ def _heartbeat(client: ServerClient, every: float, stop: threading.Event) -> Non
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(message)s", datefmt="%H:%M:%S")
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     settings = HelperSettings()
     client = ServerClient(settings)
     engine = CachingEngine(OllamaImageEngine(settings))

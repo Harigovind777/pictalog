@@ -49,7 +49,7 @@ export function ImageSlot({ variant, alt, helperOnline, readOnly, onGenerate, on
           : 'No image'
   return (
     <div className={cn(base, 'grey-card grid content-end')}>
-      <div className="grid gap-2 p-3">
+      <div className="grid gap-2 p-5">
         <p className="text-sm font-medium text-ink/80">{message}</p>
         {variant.image_status === 'not_enough_detail' && !readOnly && (
           <p className="text-xs text-ink/60">Add a name or description so the photo matches the product.</p>

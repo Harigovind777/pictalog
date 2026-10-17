@@ -45,3 +45,15 @@ export function variantLabel(v: Variant): string {
   const parts = [v.size, v.colour, v.material].filter(Boolean)
   return parts.length ? parts.join(', ') : (v.sku ?? 'Standard')
 }
+
+/** Chip labels for a product's variants, showing only the attributes that differ (S, M, L, not "S, Cotton"). */
+export function variantLabels(variants: Variant[]): string[] {
+  const fields = (['size', 'colour', 'material'] as const).filter(
+    (f) => new Set(variants.map((v) => (v[f] ?? '').trim().toLowerCase())).size > 1,
+  )
+  return variants.map((v, i) => {
+    const parts = fields.map((f) => v[f]).filter(Boolean)
+    if (parts.length) return parts.join(', ')
+    return new Set(variants.map((x) => x.sku)).size === variants.length && v.sku ? v.sku : `Option ${i + 1}`
+  })
+}

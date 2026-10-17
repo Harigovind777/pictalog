@@ -2,7 +2,7 @@ import { MoreHorizontal } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { priceLabel, variantLabel } from '@/lib/catalog'
+import { priceLabel, variantLabel, variantLabels } from '@/lib/catalog'
 import type { Product } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { ImageSlot } from './ImageSlot'
@@ -24,6 +24,7 @@ export function ProductCard({ product, currency, helperOnline, readOnly, onRegen
   const name = product.name ?? variant.sku ?? 'Untitled product'
   const price = priceLabel(variant.price_text, currency)
   const pickPhoto = () => fileInput.current?.click()
+  const labels = variantLabels(product.variants)
 
   return (
     <article className="group grid content-start gap-3">
@@ -90,7 +91,7 @@ export function ProductCard({ product, currency, helperOnline, readOnly, onRegen
                 i === index ? 'border-ink bg-ink text-white' : 'bg-tile hover:border-ink/40',
               )}
             >
-              {variantLabel(v)}
+              {labels[i]}
             </button>
           ))}
         </div>

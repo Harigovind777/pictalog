@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { categories, filterProducts, imageProgress, isWorking, priceLabel, variantLabel } from './catalog'
+import { categories, filterProducts, imageProgress, isWorking, priceLabel, variantLabel, variantLabels } from './catalog'
 import type { Product, Variant } from './types'
 
 function variant(over: Partial<Variant> = {}): Variant {
@@ -70,5 +70,20 @@ describe('labels', () => {
     expect(variantLabel(variant({ size: 'M', colour: 'Red' }))).toBe('M, Red')
     expect(variantLabel(variant({ sku: 'T-1' }))).toBe('T-1')
     expect(variantLabel(variant())).toBe('Standard')
+  })
+})
+
+describe('variantLabels', () => {
+  it('shows only what differs between variants', () => {
+    const vs = [
+      variant({ id: 1, size: 'S', colour: 'Red', material: 'Cotton' }),
+      variant({ id: 2, size: 'S', colour: 'Navy', material: 'Cotton' }),
+      variant({ id: 3, size: 'M', colour: 'Red', material: 'Cotton' }),
+    ]
+    expect(variantLabels(vs)).toEqual(['S, Red', 'S, Navy', 'M, Red'])
+  })
+  it('falls back to codes, then numbers, when nothing differs', () => {
+    expect(variantLabels([variant({ sku: 'A' }), variant({ sku: 'B' })])).toEqual(['A', 'B'])
+    expect(variantLabels([variant(), variant()])).toEqual(['Option 1', 'Option 2'])
   })
 })
