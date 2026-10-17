@@ -6,9 +6,18 @@ def test_build_prompt_full():
     product = Product(name="Classic Tee", brand="Acme", category="Apparel", description="Soft cotton crew neck")
     variant = Variant(colour="Red", material="Cotton", size="M")
     assert build_prompt(product, variant) == (
-        "Professional studio product photograph of Classic Tee by Acme in Red made of Cotton, size M (Apparel). "
+        "Professional studio product photograph of Classic Tee by Acme in Red made of Cotton (Apparel). "
         "Soft cotton crew neck. " + STUDIO
     )
+
+
+def test_build_prompt_keeps_sizes_with_units():
+    # "size M" made the model print an M on the shirt; sizes with units (1 L, 350 ml) change how a product looks.
+    bottle = build_prompt(Product(name="Steel Bottle"), Variant(size="1 L"))
+    assert bottle.startswith("Professional studio product photograph of Steel Bottle, 1 L. ")
+    assert build_prompt(Product(name="Rice"), Variant(size="5kg")).startswith("Professional studio product photograph of Rice, 5kg. ")
+    for size in ("M", "XL", "Free Size", "8", "32"):
+        assert build_prompt(Product(name="Tee"), Variant(size=size)).startswith("Professional studio product photograph of Tee. ")
 
 
 def test_build_prompt_name_only():
@@ -28,7 +37,8 @@ def test_build_prompt_truncates_description():
 def test_studio_wording():
     assert STUDIO == (
         "Single product, centered, isolated on a seamless plain white background, soft even studio lighting, "
-        "sharp focus, high detail, true-to-life colours, photorealistic e-commerce photo, no watermark."
+        "sharp focus, high detail, true-to-life colours, photorealistic e-commerce photo, "
+        "no added text, letters, numbers or watermark."
     )
 
 

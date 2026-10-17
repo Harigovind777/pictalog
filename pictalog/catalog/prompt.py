@@ -1,11 +1,21 @@
 import hashlib
+import re
 
 from pictalog.models import Product, Variant
 
 STUDIO = (
     "Single product, centered, isolated on a seamless plain white background, soft even studio lighting, "
-    "sharp focus, high detail, true-to-life colours, photorealistic e-commerce photo, no watermark."
+    "sharp focus, high detail, true-to-life colours, photorealistic e-commerce photo, "
+    "no added text, letters, numbers or watermark."
 )
+
+
+def _visible_size(size: str | None) -> str | None:
+    """Sizes with a unit (1 L, 350 ml, 5kg) change how a product looks. Letter or bare-number sizes (M, XL, 8) don't,
+    and putting them in the prompt makes the model print them on the product."""
+    if size and re.search(r"\d", size) and re.search(r"[^\W\d_]", size) and not re.fullmatch(r"(?i)size\s*\d+", size.strip()):
+        return size.strip()
+    return None
 
 
 def build_prompt(product: Product, variant: Variant) -> str:
@@ -20,8 +30,8 @@ def build_prompt(product: Product, variant: Variant) -> str:
         text += f" in {variant.colour}"
     if variant.material:
         text += f" made of {variant.material}"
-    if variant.size:
-        text += f", size {variant.size}"
+    if size := _visible_size(variant.size):
+        text += f", {size}"
     if product.category:
         text += f" ({product.category})"
     text += "."
