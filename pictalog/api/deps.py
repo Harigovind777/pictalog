@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Request, UploadFile
 
-from pictalog.images import new_image_keys, to_webp_pair
+from pictalog.images import save_image
 
 
 async def read_upload(upload: UploadFile, request: Request) -> bytes:
@@ -15,11 +15,6 @@ async def read_upload(upload: UploadFile, request: Request) -> bytes:
 def store_image(request: Request, data: bytes) -> tuple[str, str]:
     """Convert to WebP + thumbnail, save both, and return their storage keys."""
     try:
-        full, thumb = to_webp_pair(data)
+        return save_image(request.app.state.storage, data)
     except ValueError:
         raise HTTPException(400, "That file isn't an image we can read.") from None
-    full_key, thumb_key = new_image_keys()
-    storage = request.app.state.storage
-    storage.save(full_key, full, "image/webp")
-    storage.save(thumb_key, thumb, "image/webp")
-    return full_key, thumb_key

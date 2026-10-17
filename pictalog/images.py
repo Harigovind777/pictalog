@@ -29,3 +29,12 @@ def to_webp_pair(data: bytes) -> tuple[bytes, bytes]:
     thumb = io.BytesIO()
     thumb_image.save(thumb, "WEBP", quality=85)
     return full.getvalue(), thumb.getvalue()
+
+
+def save_image(storage, data: bytes) -> tuple[str, str]:
+    """Convert to WebP + thumbnail, store both, return (full_key, thumb_key). Raises ValueError for non-images."""
+    full, thumb = to_webp_pair(data)
+    full_key, thumb_key = new_image_keys()
+    storage.save(full_key, full, "image/webp")
+    storage.save(thumb_key, thumb, "image/webp")
+    return full_key, thumb_key
