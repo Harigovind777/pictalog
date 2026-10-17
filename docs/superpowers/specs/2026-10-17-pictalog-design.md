@@ -120,4 +120,4 @@ swappable for a paid image API later without changing the app.
 
 - Mac: Apple M4, 16 GB RAM, ~120 GB free. Python 3.12 + uv, Node 26, Ollama 0.18.2 (has `qwen2.5-coder`, `glm-ocr`).
 - iOS needs Xcode from the App Store (user installing). Android SDK + emulator + JDK 21 installed via Homebrew.
-- git identity: Harigovind777 / hmk94302@gmail.com.
+- git identity: Harigovind777.
