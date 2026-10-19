@@ -1,14 +1,16 @@
 import { MoreHorizontal } from 'lucide-react'
-import { motion } from 'motion/react'
-import { useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { usePhotoPicker } from '@/hooks/use-photo-picker'
 import { priceLabel, variantLabel, variantLabels } from '@/lib/catalog'
 import type { Paper } from '@/lib/paper'
+import { textProps } from '@/lib/script'
 import type { Product } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { ImageSlot } from './ImageSlot'
+import { VariantSlider } from './VariantSlider'
 
 export type ProductActions = {
   helperOnline?: boolean
@@ -21,16 +23,16 @@ type Props = ProductActions & {
   product: Product
   currency: string
   paper: Paper
-  /** Opens the product's detail view, starting on the variant shown here. */
+  /** Opens the product's page, starting on the photo shown here. */
   onOpen: (variantIndex: number) => void
 }
 
-/** Variant switcher chips, shared by the card and the detail view. */
-export function VariantChips({ product, index, onSelect, size = 'sm' }: { product: Product; index: number; onSelect: (i: number) => void; size?: 'sm' | 'md' }) {
+/** Variant switcher chips for the product page. Picking one slides the photos to it. */
+export function VariantChips({ product, index, onSelect }: { product: Product; index: number; onSelect: (i: number) => void }) {
   if (product.variants.length < 2) return null
   const labels = variantLabels(product.variants)
   return (
-    <div className="relative z-10 flex flex-wrap gap-1.5" role="group" aria-label={`${product.name ?? 'Product'} options`}>
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label={`${product.name ?? 'Product'} options`}>
       {product.variants.map((v, i) => (
         <button
           key={v.id}
@@ -38,41 +40,62 @@ export function VariantChips({ product, index, onSelect, size = 'sm' }: { produc
           aria-pressed={i === index}
           onClick={() => onSelect(i)}
           className={cn(
-            'rounded-full border font-medium transition-all duration-200 outline-ring focus-visible:outline-2',
-            size === 'sm' ? 'h-7 px-2.5 text-xs' : 'h-9 px-3.5 text-sm',
-            i === index ? 'border-ink bg-ink text-white' : 'bg-tile text-ink/70 hover:border-ink/30 hover:text-ink',
+            'relative h-9 rounded-full px-3.5 text-sm font-medium transition-colors duration-200 outline-ring focus-visible:outline-2',
+            i === index ? 'text-white' : 'border bg-tile text-ink/70 hover:border-ink/30 hover:text-ink',
           )}
         >
-          {labels[i]}
+          {i === index && (
+            <motion.span
+              layoutId={`chip-${product.id}`}
+              transition={{ type: 'spring', bounce: 0.18, duration: 0.45 }}
+              className="absolute inset-0 rounded-full bg-ink"
+            />
+          )}
+          <span className="relative">{labels[i]}</span>
         </button>
       ))}
     </div>
   )
 }
 
+/** A product in the grid, set like a catalog page: the photo on its paper, the name in the catalog's type below. */
 export function ProductCard({ product, currency, paper, onOpen, helperOnline, readOnly, onRegenerate, onUpload }: Props) {
   const [index, setIndex] = useState(0)
+  const labels = useMemo(() => variantLabels(product.variants), [product.variants])
   const variant = product.variants[Math.min(index, product.variants.length - 1)]
   const photo = usePhotoPicker(onUpload && variant ? (file) => onUpload(variant.id, file) : undefined)
   if (!variant) return null
   const name = product.name ?? variant.sku ?? 'Untitled product'
   const price = priceLabel(variant.price_text, currency)
+  const caption = product.variants.length > 1 ? labels[index] : product.brand
 
   return (
-    <motion.article
-      layoutId={`card-${product.id}`}
-      className="group relative grid content-start gap-3 rounded-2xl border bg-card p-2 pb-4 shadow-sm transition-[box-shadow,translate] duration-300 hover:-translate-y-1 hover:shadow-xl"
-    >
-      <motion.div layoutId={`image-${product.id}`} className="relative">
-        <ImageSlot
-          variant={variant}
-          alt={`${name}, ${variantLabel(variant)}`}
-          paper={paper}
-          helperOnline={helperOnline}
-          readOnly={readOnly}
-          onGenerate={onRegenerate && (() => onRegenerate(variant.id))}
-          onUpload={onUpload && photo.pick}
-          className="[&_button]:relative [&_button]:z-10"
+    <article className="group relative grid content-start gap-3">
+      {/* Above the card-wide button, so the photos can be swiped. */}
+      <div className="relative z-10">
+        <VariantSlider
+          count={product.variants.length}
+          index={index}
+          onIndexChange={setIndex}
+          dots={variant.image_status === 'ready'}
+          onSlideClick={onOpen}
+          label={`Photos of ${name}`}
+          className="rounded-[1.25rem]"
+          renderSlide={(i) => {
+            const v = product.variants[i]
+            return (
+              <ImageSlot
+                variant={v}
+                alt={`${name}, ${variantLabel(v)}`}
+                paper={paper}
+                helperOnline={helperOnline}
+                readOnly={readOnly}
+                onGenerate={onRegenerate && (() => onRegenerate(v.id))}
+                onUpload={onUpload && photo.pick}
+                className="rounded-[1.25rem]"
+              />
+            )
+          }}
         />
         {!readOnly && variant.image_status === 'ready' && (
           <DropdownMenu>
@@ -81,7 +104,7 @@ export function ProductCard({ product, currency, paper, onOpen, helperOnline, re
                 size="icon-sm"
                 variant="secondary"
                 aria-label={`Image options for ${name}`}
-                className="absolute top-2 right-2 z-10 bg-tile/85 backdrop-blur hover:bg-tile opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 data-[state=open]:opacity-100"
+                className="absolute top-2 right-2 bg-tile/85 opacity-100 backdrop-blur hover:bg-tile data-[state=open]:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
               >
                 <MoreHorizontal />
               </Button>
@@ -93,24 +116,38 @@ export function ProductCard({ product, currency, paper, onOpen, helperOnline, re
           </DropdownMenu>
         )}
         {photo.input}
-      </motion.div>
+      </div>
 
-      <div className="grid gap-1 px-2">
-        <motion.h3 layoutId={`title-${product.id}`} className="line-clamp-2 text-[0.9375rem] font-semibold leading-snug tracking-[-0.01em]">
-          {/* The whole card opens the detail view; the chips and menus above sit on top of this button. */}
-          <button type="button" onClick={() => onOpen(index)} className="text-left outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-offset-2">
+      <div className="grid gap-1 px-1">
+        <h3 {...textProps(name)} className="line-clamp-2 font-catalog text-[1.0625rem] leading-[1.2] sm:text-lg">
+          {/* The whole card opens the product page; the photos and menu sit above this button. */}
+          <button
+            type="button"
+            onClick={() => onOpen(index)}
+            className="text-left outline-none after:absolute after:inset-0 after:rounded-[1.25rem] focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-offset-2"
+          >
             {name}
           </button>
-        </motion.h3>
-        <div className="flex items-baseline justify-between gap-3 text-sm">
-          {price && <p className="font-semibold">{price}</p>}
-          {product.brand && <p className="truncate text-muted-foreground">{product.brand}</p>}
+        </h3>
+        <div className="flex items-baseline justify-between gap-3 text-[0.8125rem]">
+          {price && <span className="shrink-0 font-semibold">{price}</span>}
+          {/* The caption follows the swipe, naming the size or colour in view. */}
+          <span className="relative min-w-0 overflow-hidden text-right text-muted-foreground">
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={caption ?? ''}
+                initial={{ y: '100%', opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '-100%', opacity: 0 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+                className="block truncate"
+              >
+                {caption || '\u00a0'}
+              </motion.span>
+            </AnimatePresence>
+          </span>
         </div>
       </div>
-
-      <div className="px-2 empty:hidden">
-        <VariantChips product={product} index={index} onSelect={setIndex} />
-      </div>
-    </motion.article>
+    </article>
   )
 }

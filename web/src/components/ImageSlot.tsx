@@ -38,6 +38,7 @@ export function ImageSlot({ variant, alt, paper, helperOnline, readOnly, onGener
           src={src}
           alt={alt}
           loading="lazy"
+          decoding="async"
           onError={() => setBroken(src)}
           className={cn('develop size-full object-contain', generated && 'on-paper scale-[0.92]')}
         />
