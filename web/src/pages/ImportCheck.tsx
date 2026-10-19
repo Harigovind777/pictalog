@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ChevronLeft } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
@@ -111,7 +112,7 @@ export function ImportCheck() {
           <div className="flex gap-2">
             <UploadButton catalogId={catalogId} label="Try another file" />
             <Button variant="ghost" asChild>
-              <Link to={`/catalogs/${catalogId}`}>Back to catalog</Link>
+              <Link to={`/catalogs/${catalogId}`} viewTransition>Back to catalog</Link>
             </Button>
           </div>
         </div>
@@ -124,7 +125,7 @@ export function ImportCheck() {
       <Page>
         <h1 className="font-display text-4xl sm:text-5xl">This file has already been added</h1>
         <Button asChild className="w-fit">
-          <Link to={`/catalogs/${catalogId}`}>Open catalog</Link>
+          <Link to={`/catalogs/${catalogId}`} viewTransition>Open catalog</Link>
         </Button>
       </Page>
     )
@@ -136,6 +137,14 @@ export function ImportCheck() {
     <>
       <Page>
         <div className="grid gap-4">
+          <Link
+            to={`/catalogs/${catalogId}`}
+            viewTransition
+            className="-ml-1 inline-flex w-fit items-center gap-0.5 rounded-full py-1 pr-2 text-sm font-medium text-muted-foreground transition-colors outline-ring hover:text-foreground focus-visible:outline-2"
+          >
+            <ChevronLeft className="size-4" />
+            Back to catalog
+          </Link>
           <SectionLabel>Step 2 of 2</SectionLabel>
           <h1 className="font-display text-[2.75rem] sm:text-6xl">
             Check what we found
@@ -192,7 +201,7 @@ export function ImportCheck() {
             onClick={() => apply.mutateAsync()}
             onDone={() => {
               toast.success('Catalog updated')
-              navigate(`/catalogs/${catalogId}`)
+              navigate(`/catalogs/${catalogId}`, { viewTransition: true })
             }}
           >
             {apply.isPending ? 'Updating catalog…' : 'Update catalog'}

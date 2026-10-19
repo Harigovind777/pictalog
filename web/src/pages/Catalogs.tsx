@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ArrowRight, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { motion } from 'motion/react'
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Fragment, useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { CatalogCover } from '@/components/CatalogCover'
+import { CatalogShelf } from '@/components/CatalogShelf'
 import { FloatingShowcase } from '@/components/FloatingShowcase'
 import { SectionLabel } from '@/components/SectionLabel'
 import { Button } from '@/components/ui/button'
@@ -12,29 +12,31 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { assetUrl, createCatalog, listCatalogs } from '@/lib/api'
+import { createCatalog } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { firstLanguagesVisit, LANGUAGES } from '@/lib/languages'
 import { fadeInUp, stagger } from '@/lib/motion'
-import { paperFor } from '@/lib/paper'
-import { cn } from '@/lib/utils'
-
-const dateFormat = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+import { shelfMemory } from '@/lib/page-transitions'
+import { catalogsQuery } from '@/lib/queries'
 
 export function Catalogs() {
-  const { data, isLoading, error } = useQuery({ queryKey: ['catalogs'], queryFn: listCatalogs })
+  const { data, isLoading, error } = useQuery(catalogsQuery)
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
 
-  const totals = data && {
-    catalogs: data.length,
-    products: data.reduce((n, c) => n + c.product_count, 0),
-    variants: data.reduce((n, c) => n + c.variant_count, 0),
-  }
+  const products = data?.reduce((n, c) => n + c.product_count, 0) ?? 0
+
+  useEffect(() => {
+    // Told once, after signing in: people who stay signed in never see the languages on the sign-in page.
+    if (firstLanguagesVisit()) {
+      toast("Your lists can be in India's languages", { description: <LanguagesNews />, duration: 12_000 })
+    }
+  }, [])
 
   return (
-    <main className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:gap-12 sm:px-6 sm:py-14">
+    <main className="grid gap-8 py-8 sm:gap-10 sm:py-14">
       {data && data.length === 0 ? (
-        <section className="grid items-center gap-10 md:grid-cols-[1.1fr_0.9fr] md:gap-14">
+        <section className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 sm:px-6 md:grid-cols-[1.1fr_0.9fr] md:gap-14">
           <motion.div variants={stagger} initial="hidden" animate="visible" className="grid max-w-xl gap-6">
             <motion.div variants={fadeInUp}>
               <SectionLabel live>{user?.company_name ?? 'Your studio'}</SectionLabel>
@@ -56,83 +58,52 @@ export function Catalogs() {
           <FloatingShowcase className="mx-auto" />
         </section>
       ) : (
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="grid gap-4">
-            <SectionLabel>{user?.company_name ?? 'Your studio'}</SectionLabel>
-            <h1 className="font-display text-[2.75rem] sm:text-7xl">
-              Your catalogs
-            </h1>
-          </div>
+        <div className="mx-auto grid w-full max-w-7xl gap-3 px-4 sm:px-6">
+          <h1 className="font-display text-[2.75rem] sm:text-7xl">Your catalogs</h1>
           {data && (
-            <Button size="lg" onClick={() => setOpen(true)} className="w-full sm:w-auto">
-              <Plus />
-              New catalog
-            </Button>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-muted-foreground">
+                {data.length} {data.length === 1 ? 'catalog' : 'catalogs'} with {products} {products === 1 ? 'product' : 'products'}
+              </p>
+              <Button onClick={() => setOpen(true)} className="shrink-0">
+                <Plus />
+                New catalog
+              </Button>
+            </div>
           )}
         </div>
       )}
 
-      {totals && totals.catalogs > 0 && (
-        <dl className="dot-pattern relative grid grid-cols-3 overflow-hidden rounded-2xl bg-ink px-2 py-6 text-white sm:py-8">
-          <div className="pointer-events-none absolute -top-24 -right-16 size-64 rounded-full bg-white/10 blur-[90px]" aria-hidden />
-          {[
-            ['Catalogs', totals.catalogs],
-            ['Products', totals.products],
-            ['Sizes and colours', totals.variants],
-          ].map(([label, value], i) => (
-            <div key={label} className={cn('relative grid gap-1 px-3 text-center sm:px-6', i > 0 && 'border-l border-white/10')}>
-              <dd className="font-display text-3xl sm:text-5xl">{value}</dd>
-              <dt className="text-xs text-white/60 sm:text-sm">{label}</dt>
-            </div>
-          ))}
-        </dl>
-      )}
-
       {isLoading && (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex gap-3 overflow-hidden px-[9vw] sm:gap-6 sm:px-[max(1.5rem,calc(50vw-38.5rem))]">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="aspect-[4/3] rounded-2xl" />
+            <Skeleton key={i} className="aspect-[4/5] w-[82vw] shrink-0 rounded-[1.5rem] sm:w-[22rem] lg:w-[24rem]" />
           ))}
         </div>
       )}
-      {error && <p className="text-destructive">{error.message}</p>}
+      {error && <p className="mx-auto w-full max-w-7xl px-4 text-destructive sm:px-6">{error.message}</p>}
 
-      {data && data.length > 0 && (
-        <motion.ul variants={stagger} initial="hidden" animate="visible" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {data.map((c) => (
-            <motion.li key={c.id} variants={fadeInUp}>
-              <Link
-                to={`/catalogs/${c.id}`}
-                className="group relative grid h-full gap-4 overflow-hidden rounded-2xl border bg-card p-2 pb-5 shadow-md transition-[box-shadow,translate] duration-300 outline-none hover:-translate-y-1 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <span className="pointer-events-none absolute inset-0 bg-gradient-to-br from-ink/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
-                <CatalogCover
-                  paper={paperFor(c.id)}
-                  covers={c.covers.map((cover) => ({ ...cover, url: assetUrl(cover.url) ?? cover.url }))}
-                  emptyText="Upload a product list to fill this catalog"
-                  className="rounded-xl"
-                />
-                <div className="relative grid gap-1 px-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <h2 className="truncate text-xl font-semibold tracking-[-0.01em]">{c.name}</h2>
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-brand" aria-hidden />
-                  </div>
-                  <div className="flex justify-between gap-4 text-sm text-muted-foreground">
-                    <span>
-                      {c.product_count} {c.product_count === 1 ? 'product' : 'products'}
-                      {c.variant_count > c.product_count && `, ${c.variant_count} variants`}
-                    </span>
-                    <span>{dateFormat.format(new Date(c.updated_at + 'Z'))}</span>
-                  </div>
-                </div>
-              </Link>
-            </motion.li>
-          ))}
-        </motion.ul>
-      )}
+      {data && data.length > 0 && <CatalogShelf catalogs={data} onNew={() => setOpen(true)} />}
 
       <NewCatalogDialog open={open} onOpenChange={setOpen} />
     </main>
+  )
+}
+
+const NEWS = ['hi', 'ta', 'bn', 'ur']
+
+function LanguagesNews() {
+  const shown = LANGUAGES.filter((l) => NEWS.includes(l.lang))
+  return (
+    <>
+      Upload a list in{' '}
+      {shown.map((l) => (
+        <Fragment key={l.lang}>
+          <bdi lang={l.lang}>{l.native}</bdi>,{' '}
+        </Fragment>
+      ))}
+      or {LANGUAGES.length - 1 - shown.length} more besides English. Names stay in their own script.
+    </>
   )
 }
 
@@ -142,7 +113,10 @@ function NewCatalogDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [currency, setCurrency] = useState('₹')
   const mutation = useMutation({
     mutationFn: () => createCatalog(name.trim(), currency.trim()),
-    onSuccess: (catalog) => navigate(`/catalogs/${catalog.id}`),
+    onSuccess: (catalog) => {
+      shelfMemory.catalogId = catalog.id
+      navigate(`/catalogs/${catalog.id}`, { viewTransition: true })
+    },
     onError: (e) => toast.error(e.message),
   })
 

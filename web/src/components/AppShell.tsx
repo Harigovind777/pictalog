@@ -1,6 +1,6 @@
-import { motion, useMotionValueEvent, useScroll } from 'motion/react'
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
 import { useRef, useState } from 'react'
-import { Link, Navigate, Outlet } from 'react-router'
+import { Link, Navigate, Outlet, ScrollRestoration, useNavigation } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { assetUrl, uploadLogo } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { easeOut } from '@/lib/motion'
 import { HelperStatus } from './HelperStatus'
 import { Wordmark } from './Wordmark'
 
@@ -35,6 +36,7 @@ export function AppShell() {
   const { scrollY } = useScroll()
   const [floating, setFloating] = useState(false)
   useMotionValueEvent(scrollY, 'change', (y) => setFloating(y > 40))
+  const navigating = useNavigation().state === 'loading'
 
   if (loading) return <div className="min-h-svh" />
   if (!user) return <Navigate to="/login" replace />
@@ -52,7 +54,20 @@ export function AppShell() {
   const logo = assetUrl(user.logo_url)
   return (
     <div className="min-h-svh">
-      <header className="sticky top-0 z-30 px-2 pt-safe sm:px-4">
+      {/* Each screen's data is fetched before it slides in. If that takes a moment, a hairline fills across the top. */}
+      <AnimatePresence>
+        {navigating && (
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 0.85, opacity: 1, transition: { duration: 2.4, ease: easeOut, opacity: { delay: 0.15 } } }}
+            exit={{ scaleX: 1, opacity: 0, transition: { duration: 0.35 } }}
+            className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-ink"
+            aria-hidden
+          />
+        )}
+      </AnimatePresence>
+      {/* Stays still while screens slide underneath it. */}
+      <header className="sticky top-0 z-30 px-2 pt-safe [view-transition-name:app-header] sm:px-4">
         <motion.div
           initial={false}
           animate={floating ? FLOATING : DOCKED}
@@ -103,6 +118,8 @@ export function AppShell() {
         </motion.div>
       </header>
       <Outlet />
+      {/* New screens open at the top; going back returns to where you were. */}
+      <ScrollRestoration />
     </div>
   )
 }

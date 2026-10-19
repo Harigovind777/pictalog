@@ -18,7 +18,7 @@ function useUpload(catalogId: number) {
     setBusy(true)
     try {
       const imp = await uploadImport(catalogId, file)
-      navigate(`/catalogs/${catalogId}/imports/${imp.id}`)
+      navigate(`/catalogs/${catalogId}/imports/${imp.id}`, { viewTransition: true })
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'The upload failed.')
     } finally {

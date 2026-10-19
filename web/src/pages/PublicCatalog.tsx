@@ -2,12 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Download } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { CatalogBrowser } from '@/components/CatalogBrowser'
-import { SectionLabel } from '@/components/SectionLabel'
+import { CatalogCover } from '@/components/CatalogCover'
 import { Wordmark } from '@/components/Wordmark'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { assetUrl, getPublic, publicPdfUrl } from '@/lib/api'
+import { coversOf } from '@/lib/catalog'
 import { paperFor } from '@/lib/paper'
+import { textProps } from '@/lib/script'
 
 export function PublicCatalog() {
   const token = useParams().token ?? ''
@@ -23,24 +25,40 @@ export function PublicCatalog() {
   }
 
   const logo = assetUrl(catalog?.logo_url)
+  const covers = coversOf(catalog?.products ?? []).map((c) => ({ ...c, url: assetUrl(c.url) ?? c.url }))
   return (
     <div className="min-h-svh pt-safe">
       <main className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:gap-12 sm:px-6 sm:py-16">
         {catalog ? (
-          <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="grid gap-5">
-              <div className="flex items-center gap-3">
-                {logo && <img src={logo} alt="" className="size-11 rounded-full border bg-tile object-contain p-1 shadow-sm" />}
-                <SectionLabel>{catalog.company_name}</SectionLabel>
+          <header className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] md:items-end md:gap-x-14">
+            {covers.length > 0 && (
+              <CatalogCover
+                covers={covers}
+                paper={paperFor(catalog.id)}
+                eager
+                className="rounded-[1.5rem] shadow-[0_30px_60px_-30px_rgb(0_0_0/0.35)] md:order-2"
+              />
+            )}
+            <div className="grid content-end gap-5 md:order-1 md:pb-1">
+              <p className="flex items-center gap-3 font-medium text-ink/70">
+                {logo && <img src={logo} alt="" className="size-10 rounded-full border bg-tile object-contain p-1 shadow-sm" />}
+                {catalog.company_name}
+              </p>
+              <div className="grid gap-3">
+                <h1 {...textProps(catalog.name)} className="font-catalog font-masthead text-[3.25rem] leading-[0.95] tracking-[-0.025em] break-words sm:text-[5rem] lg:text-[6.5rem]">
+                  {catalog.name}
+                </h1>
+                <p className="text-muted-foreground">
+                  {catalog.products.length} {catalog.products.length === 1 ? 'product' : 'products'}
+                </p>
               </div>
-              <h1 className="font-display text-[2.75rem] break-words sm:text-7xl">{catalog.name}</h1>
+              <Button variant="outline" asChild className="w-fit">
+                <a href={publicPdfUrl(token)} download>
+                  <Download />
+                  Download PDF
+                </a>
+              </Button>
             </div>
-            <Button variant="outline" asChild className="w-fit">
-              <a href={publicPdfUrl(token)} download>
-                <Download />
-                Download PDF
-              </a>
-            </Button>
           </header>
         ) : (
           <Skeleton className="h-24 w-80 rounded-2xl" />
