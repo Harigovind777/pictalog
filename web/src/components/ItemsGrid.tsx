@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { hasEnoughDetail, type TextField } from '@/lib/items'
+import { textProps } from '@/lib/script'
 import type { ExtractedItem } from '@/lib/types'
 
 const COLUMNS: { field: TextField; label: string; width: string }[] = [
@@ -55,10 +56,11 @@ export function ItemsGrid({ items, onChange, onRemove }: Props) {
                   {COLUMNS.map((c) => (
                     <td key={c.field} className="px-1 py-1">
                       <input
+                        {...textProps(item[c.field])}
                         value={item[c.field] ?? ''}
                         onChange={(e) => onChange(index, c.field, e.target.value)}
                         aria-label={`${c.label}, row ${index + 1}`}
-                        className="h-9 w-full rounded-lg bg-transparent px-2 outline-ring hover:bg-sweep focus:bg-sweep focus-visible:outline-2"
+                        className={`h-9 w-full rounded-lg bg-transparent px-2 outline-ring hover:bg-sweep focus:bg-sweep focus-visible:outline-2 ${c.field === 'name' ? 'font-catalog text-[0.9375rem]' : ''}`}
                       />
                     </td>
                   ))}

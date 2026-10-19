@@ -33,4 +33,10 @@ describe('hasEnoughDetail', () => {
     expect(hasEnoughDetail({ ...emptyItem(), name: 'MUG', sku: 'mug' })).toBe(false)
     expect(hasEnoughDetail(emptyItem())).toBe(false)
   })
+  it('counts short names in Indian scripts and Urdu as names, and Indian digits as codes', () => {
+    for (const name of ['चाय', 'घी', 'பை', 'ചായ', 'চা', 'چائے', 'ਦਾਲ']) {
+      expect(hasEnoughDetail({ ...emptyItem(), name })).toBe(true)
+    }
+    expect(hasEnoughDetail({ ...emptyItem(), name: '१२३४' })).toBe(false)
+  })
 })

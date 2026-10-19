@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
+import { LanguageList } from '@/components/LanguageList'
 import { SectionLabel } from '@/components/SectionLabel'
 import { Wordmark } from '@/components/Wordmark'
 import { ThreeDMarquee } from '@/components/ui/3d-marquee'
@@ -74,7 +75,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
             )}
             <p className="text-lg leading-relaxed text-muted-foreground">
               {isSignup
-                ? 'Upload a spreadsheet, PDF or a photo of a printed list. Pictalog makes a studio photo of every product, in every size and colour, and turns them into a catalog you can share.'
+                ? "Upload a spreadsheet, PDF or a photo of a printed list, in English or any of 15 of India's languages. Pictalog makes a studio photo of every product, in every size and colour, and turns them into a catalog you can share."
                 : 'Your catalogs are where you left them.'}
             </p>
           </motion.div>
@@ -118,6 +119,19 @@ export function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
               {isSignup ? 'Sign in' : 'Create an account'}
             </Link>
           </motion.p>
+          <motion.section variants={fadeInUp} aria-labelledby="languages" className="grid gap-3 border-t pt-6">
+            <SectionLabel>
+              <span id="languages">Lists in your language</span>
+            </SectionLabel>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Your product list can be in English or any of these languages of India. Names, sizes and colours stay
+              in your language and script.
+            </p>
+            <LanguageList />
+            <p className="text-xs text-muted-foreground">
+              Santali and Manipuri lists can be spreadsheets or typed text; photos of them can't be read yet.
+            </p>
+          </motion.section>
         </motion.div>
         <p className="text-xs text-muted-foreground">Product photos are made by AI from your product details.</p>
       </section>
