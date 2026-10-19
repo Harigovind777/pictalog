@@ -6,6 +6,7 @@ import re
 
 import httpx
 
+from pictalog_helper import glossary
 from pictalog_helper.config import HelperSettings
 from pictalog_helper.engines import ollama_error
 
@@ -15,13 +16,19 @@ FRAME = "Professional studio product photograph of"
 MAX_WORDS = 60
 
 INSTRUCTIONS = (
-    "You help a product photographer. Rewrite the product below as one short English phrase that starts with the "
-    "product's everyday English name (for example 'black peppercorns', 'green cardamom pods', 'teapot'), then says "
-    "what it looks like: shape, colour, material and size. Translate every "
-    "non-English word, and explain regional product names (for example 'kasavu mundu' is a white handwoven cotton "
-    "wrap with a gold border). Leave out brand names, prices, product codes and any writing that would be printed on "
-    "the product. Reply with the phrase only, under 40 words, with no notes or explanations."
+    "You help a product photographer. Translate the product below into one short English phrase for its photo: "
+    "first what it is, in plain everyday English, then what it looks like: material, colour, shape and size. "
+    "It may be written in Hindi, Tamil, Bengali, Urdu or any other language of India: translate every word, explain "
+    "regional product names, and keep every detail it gives. Meanings given after it are correct; use them. Never add "
+    "a colour or material it doesn't give, and never describe a different product. Leave out brand names, prices, "
+    "product codes and any writing that would be printed on the product. Reply with the phrase only, under 40 words, "
+    "with no notes or explanations."
 )
+
+
+def _with_notes(subject: str) -> str:
+    found = glossary.notes(subject)
+    return f"{subject}\n\nMeanings: {'; '.join(found)}." if found else subject
 
 
 class PromptWriter:
@@ -43,10 +50,10 @@ class PromptWriter:
         try:
             res = self._http.post("/api/chat", json={
                 "model": self._settings.text_model,
-                "messages": [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": subject}],
+                "messages": [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": _with_notes(subject)}],
                 "think": False,
                 "stream": False,
-                "options": {"temperature": 0},
+                "options": {"temperature": 0, "num_predict": 120},  # one short phrase; stops a model that rambles
             })
             if res.status_code >= 400:
                 raise RuntimeError(ollama_error(res))
