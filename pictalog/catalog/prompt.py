@@ -2,6 +2,7 @@ import hashlib
 import re
 
 from pictalog.models import Product, Variant
+from pictalog.parsing.headings import normalise
 
 STUDIO = (
     "Single product, centered, isolated on a seamless plain white background, soft even studio lighting, "
@@ -10,10 +11,22 @@ STUDIO = (
 )
 
 
+# "Size 8" in India's languages: a numbered size, not a measurement.
+_SIZE_WORDS = "|".join(
+    normalise(w) for w in ["size", "साइज़", "साईज़", "नाप", "সাইজ", "ਸਾਈਜ਼", "સાઇઝ", "ସାଇଜ୍", "அளவு", "சைஸ்", "సైజు",
+                           "ಸೈಜ್", "ಗಾತ್ರ", "സൈസ്", "വലിപ്പം", "سائز"]
+)
+
+
 def _visible_size(size: str | None) -> str | None:
-    """Sizes with a unit (1 L, 350 ml, 5kg) change how a product looks. Letter or bare-number sizes (M, XL, 8) don't,
-    and putting them in the prompt makes the model print them on the product."""
-    if size and re.search(r"\d", size) and re.search(r"[^\W\d_]", size) and not re.fullmatch(r"(?i)size\s*\d+", size.strip()):
+    """Sizes with a unit (1 L, 350 ml, 5kg, 1 लीटर) change how a product looks. Letter or bare-number sizes (M, XL, 8,
+    साइज़ 8) don't, and putting them in the prompt makes the model print them on the product."""
+    if (
+        size
+        and re.search(r"\d", size)
+        and re.search(r"[^\W\d_]", size)
+        and not re.fullmatch(rf"(?:{_SIZE_WORDS}) \d+", normalise(size))
+    ):
         return size.strip()
     return None
 

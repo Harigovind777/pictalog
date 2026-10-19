@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import unicodedata
 from dataclasses import dataclass, field
 
 from sqlalchemy.orm import Session
@@ -12,12 +13,16 @@ from pictalog.models import Catalog, Product, Variant, utcnow
 from pictalog.parsing.price import parse_price
 from pictalog.schemas import ExtractedItem
 
+_INVISIBLE = dict.fromkeys(map(ord, "\u200b\u200c\u200d\ufeff"))
 VISUAL_FIELDS = ("name", "brand", "category", "description", "size", "colour", "material", "image_url")
 MAX_NAMES = 20
 
 
 def _norm(text: str | None) -> str:
-    return " ".join((text or "").lower().split())
+    """Lower case, single spaces, and one spelling for letters that look the same: क़ typed as one character or as
+    क plus a dot, with or without invisible joiners."""
+    text = unicodedata.normalize("NFC", text or "").translate(_INVISIBLE)
+    return " ".join(text.lower().split())
 
 
 def _subject(item: ExtractedItem) -> str:

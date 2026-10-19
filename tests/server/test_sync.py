@@ -122,3 +122,9 @@ def test_diff_summary():
         "new": 1, "changed": 1, "removed": 1, "unchanged": 3,
         "new_names": ["Tee · S · Red"], "changed_names": ["Mug"], "removed_names": ["Bowl"],
     }
+
+
+def test_match_keys_ignore_how_indian_letters_were_typed():
+    assert match_key(Item(name="Tee", size="M")) == "nv:tee|m||"
+    assert match_key(Item(name="\u095c")) == match_key(Item(name="\u0921\u093c"))  # ड़ as one character or two
+    assert match_key(Item(name="\u0bb8\u0bcd\u200c")) == match_key(Item(name="\u0bb8\u0bcd"))  # trailing joiner
