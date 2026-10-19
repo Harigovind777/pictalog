@@ -1,9 +1,11 @@
-"""Build the sample catalogs in samples/: one of each kind of file a company might upload.
+"""Build the sample catalogs in samples/: one of each kind of file a company might upload, and in samples/languages/
+the same four products in each of India's languages as a spreadsheet, a typed list and a photo of a printed list.
 
 uv run python scripts/make_samples.py
 """
 
 import io
+import sys
 from pathlib import Path
 
 from docx import Document
@@ -112,6 +114,20 @@ def pricelist_jpg() -> None:
     photo.filter(ImageFilter.GaussianBlur(0.6)).save(OUT / "pricelist.jpg", quality=88)
 
 
+def languages() -> None:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from eval_languages import photo, xlsx
+    from language_samples import LANGUAGES, lines
+
+    folder = OUT / "languages"
+    folder.mkdir(exist_ok=True)
+    for language in LANGUAGES:
+        stem = language.name.lower()
+        (folder / f"{stem}.xlsx").write_bytes(xlsx(language))
+        (folder / f"{stem}.txt").write_text("\n".join(lines(language)) + "\n", encoding="utf-8")
+        (folder / f"{stem}-pricelist.jpg").write_bytes(photo(language))
+
+
 if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
     apparel_xlsx()
@@ -119,4 +135,5 @@ if __name__ == "__main__":
     furniture_docx()
     electronics_pdf()
     pricelist_jpg()
+    languages()
     print("\n".join(sorted(p.name for p in OUT.iterdir())))
