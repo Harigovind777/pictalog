@@ -37,7 +37,11 @@ export type CatalogSummary = {
   product_count: number
   variant_count: number
   updated_at: string
+  covers: Cover[]
 }
+
+/** A photo on a catalog's cover. `generated` photos are AI studio shots on white. */
+export type Cover = { url: string; generated: boolean }
 
 export type Catalog = {
   id: number

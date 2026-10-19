@@ -21,7 +21,7 @@ def test_rewrites_subject_into_plain_english(settings):
     assert prompt == "Professional studio product photograph of a blue cast-iron teapot, 1.2 litres. Single product."
     body = rec.bodies()[0]
     assert str(rec.requests[0].url) == "http://localhost:11434/api/chat"
-    assert body["model"] == "qwen3:4b-instruct" and body["think"] is False and body["options"]["temperature"] == 0
+    assert body["model"] == "qwen3.5:4b" and body["think"] is False and body["options"]["temperature"] == 0
     assert "Théière in Bleu" in body["messages"][-1]["content"]
 
 
@@ -61,3 +61,10 @@ def test_keeps_only_the_first_sentence(settings):
     rec = Recorder(lambda r: reply('Black peppercorns, small, dark brown, 250 grams. "Tellicherry" refers to a variety.'))
     prompt = PromptWriter(settings, transport=rec.transport).prompt_for(JOB)
     assert prompt == "Professional studio product photograph of Black peppercorns, small, dark brown, 250 grams. Single product."
+
+
+def test_materials_and_colours_go_to_the_model_as_meanings(settings):
+    rec = Recorder(lambda r: httpx.Response(200, json={"message": {"content": "a small brass oil lamp"}}))
+    writer = PromptWriter(settings, transport=rec.transport)
+    writer.prompt_for({"prompt": "x", "subject": "पितळेचा दिवा in लाल.", "studio": "On white."})
+    assert rec.bodies()[0]["messages"][1]["content"] == "पितळेचा दिवा in लाल.\n\nMeanings: पितळेचा = brass; लाल = red."

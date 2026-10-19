@@ -16,10 +16,10 @@ export function HelperStatus() {
       <TooltipTrigger asChild>
         <span
           tabIndex={0}
-          className="inline-flex h-8 items-center gap-2 rounded-full border bg-tile px-3 text-sm text-muted-foreground outline-ring focus-visible:outline-2"
+          className="inline-flex h-9 min-w-9 items-center justify-center gap-2 rounded-full border bg-tile px-2.5 text-sm text-muted-foreground shadow-sm outline-ring focus-visible:outline-2 sm:px-3.5"
         >
-          <span className={cn('size-2 rounded-full', online ? 'bg-amber shadow-[0_0_0_3px_color-mix(in_srgb,var(--amber)_25%,transparent)]' : 'bg-greycard')} />
-          <span className="hidden sm:inline">{online ? 'Image helper on' : 'Image helper off'}</span>
+          <span className={cn('size-2 rounded-full', online ? 'pulse-dot bg-ink' : 'bg-greycard')} />
+          <span className="max-sm:sr-only">{online ? 'Image helper on' : 'Image helper off'}</span>
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-64">

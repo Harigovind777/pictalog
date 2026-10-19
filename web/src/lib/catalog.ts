@@ -1,4 +1,4 @@
-import type { Catalog, ImageStatus, Product, Variant } from './types'
+import type { Catalog, Cover, ImageStatus, Product, Variant } from './types'
 
 const norm = (text: string | null | undefined) => (text ?? '').trim().toLowerCase()
 
@@ -38,7 +38,7 @@ export function isWorking(counts: Counts): boolean {
 
 export function priceLabel(priceText: string | null, currency: string): string {
   const text = (priceText ?? '').trim()
-  return text && currency && /^[\d.,\s]+$/.test(text) ? `${currency}${text}` : text
+  return text && currency && /^[\p{Nd}.,\s]+$/u.test(text) ? `${currency}${text}` : text
 }
 
 export function variantLabel(v: Variant): string {
@@ -56,4 +56,16 @@ export function variantLabels(variants: Variant[]): string[] {
     if (parts.length) return parts.join(', ')
     return new Set(variants.map((x) => x.sku)).size === variants.length && v.sku ? v.sku : `Option ${i + 1}`
   })
+}
+
+/** The catalog's cover, as the server picks it for the catalog list: the first finished photo of each of the first
+ *  products that have one. The catalog's page shows the same cover the shelf did. */
+export function coversOf(products: Product[], limit = 3): Cover[] {
+  const found: Cover[] = []
+  for (const p of products) {
+    const v = p.variants.find((v) => v.image_status === 'ready' && (v.thumb_url ?? v.image_url))
+    if (v) found.push({ url: (v.thumb_url ?? v.image_url)!, generated: v.image_source === 'generated' })
+    if (found.length === limit) break
+  }
+  return found
 }

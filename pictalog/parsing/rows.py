@@ -4,8 +4,9 @@ import re
 from pictalog.parsing.mapping import TableMatch
 from pictalog.schemas import ExtractedItem
 
-# Split "S, M, L" or "Red/Blue" but not "1,000 ml" or "10/12": a separator with digits on both sides stays.
-_LIST_SEPARATOR = re.compile(r"\s*(?:(?<!\d)[,/;|]|[,/;|](?!\d))\s*")
+# Split "S, M, L", "Red/Blue" or "سرخ، نیلا" (Urdu comma) but not "1,000 ml" or "10/12": a separator with digits on
+# both sides stays.
+_LIST_SEPARATOR = re.compile(r"\s*(?:(?<!\d)[,/;|،]|[,/;|،](?!\d))\s*")
 
 _FIELD_TO_ATTR = {"price": "price_text"}
 

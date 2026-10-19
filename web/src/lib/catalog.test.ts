@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { categories, filterProducts, imageProgress, isWorking, priceLabel, variantLabel, variantLabels } from './catalog'
+import { categories, coversOf, filterProducts, imageProgress, isWorking, priceLabel, variantLabel, variantLabels } from './catalog'
 import type { Product, Variant } from './types'
 
 function variant(over: Partial<Variant> = {}): Variant {
@@ -18,6 +18,14 @@ const products = [
   product({ id: 2, name: 'Coffee Mug', category: 'Kitchen', description: 'Stoneware', variants: [variant({ size: '350 ml' })] }),
   product({ id: 3, name: 'Bowl', category: 'kitchen ', variants: [variant()] }),
 ]
+
+describe('priceLabel', () => {
+  it('adds the currency to bare numbers in any digits', () => {
+    expect(priceLabel('1,299', '₹')).toBe('₹1,299')
+    expect(priceLabel('१,२९९', '₹')).toBe('₹१,२९९')
+    expect(priceLabel('৳ ২৫০', '₹')).toBe('৳ ২৫০')
+  })
+})
 
 describe('filterProducts', () => {
   it('matches sku and colour', () => {
@@ -85,5 +93,22 @@ describe('variantLabels', () => {
   it('falls back to codes, then numbers, when nothing differs', () => {
     expect(variantLabels([variant({ sku: 'A' }), variant({ sku: 'B' })])).toEqual(['A', 'B'])
     expect(variantLabels([variant(), variant()])).toEqual(['Option 1', 'Option 2'])
+  })
+})
+
+describe('coversOf', () => {
+  it('takes the first finished photo of each of the first products, up to three', () => {
+    const covers = coversOf([
+      product({ id: 1, variants: [variant({ image_status: 'queued' }), variant({ thumb_url: '/a-thumb', image_url: '/a' })] }),
+      product({ id: 2, variants: [variant({ image_status: 'failed', thumb_url: '/x' })] }),
+      product({ id: 3, variants: [variant({ image_url: '/b', image_source: 'uploaded' })] }),
+      product({ id: 4, variants: [variant({ thumb_url: '/c' })] }),
+      product({ id: 5, variants: [variant({ thumb_url: '/d' })] }),
+    ])
+    expect(covers).toEqual([
+      { url: '/a-thumb', generated: true },
+      { url: '/b', generated: false },
+      { url: '/c', generated: true },
+    ])
   })
 })

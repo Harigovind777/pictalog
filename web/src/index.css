@@ -1,18 +1,56 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/schibsted-grotesk";
+@import "@fontsource-variable/mona-sans/standard.css";
+@import "@fontsource-variable/bodoni-moda/opsz.css";
+/* India's scripts, in Noto. Each face only downloads when a page shows its letters. */
+@import "@fontsource-variable/noto-sans-devanagari";
+@import "@fontsource-variable/noto-sans-bengali";
+@import "@fontsource-variable/noto-sans-gurmukhi";
+@import "@fontsource-variable/noto-sans-gujarati";
+@import "@fontsource-variable/noto-sans-oriya";
+@import "@fontsource-variable/noto-sans-tamil";
+@import "@fontsource-variable/noto-sans-telugu";
+@import "@fontsource-variable/noto-sans-kannada";
+@import "@fontsource-variable/noto-sans-malayalam";
+@import "@fontsource-variable/noto-sans-ol-chiki";
+@import "@fontsource-variable/noto-sans-meetei-mayek";
+@import "@fontsource-variable/noto-naskh-arabic";
+@import "@fontsource-variable/noto-serif-devanagari";
+@import "@fontsource-variable/noto-serif-bengali";
+@import "@fontsource-variable/noto-serif-gurmukhi";
+@import "@fontsource-variable/noto-serif-gujarati";
+@import "@fontsource-variable/noto-serif-oriya";
+@import "@fontsource-variable/noto-serif-tamil";
+@import "@fontsource-variable/noto-serif-telugu";
+@import "@fontsource-variable/noto-serif-kannada";
+@import "@fontsource-variable/noto-serif-malayalam";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Mona Sans Variable',
+        'Noto Sans Devanagari Variable', 'Noto Sans Bengali Variable', 'Noto Sans Gurmukhi Variable',
+        'Noto Sans Gujarati Variable', 'Noto Sans Oriya Variable', 'Noto Sans Tamil Variable', 'Noto Sans Telugu Variable',
+        'Noto Sans Kannada Variable', 'Noto Sans Malayalam Variable', 'Noto Naskh Arabic Variable',
+        'Noto Sans Ol Chiki Variable', 'Noto Sans Meetei Mayek Variable', ui-sans-serif, system-ui, sans-serif;
+    /* Catalog content (catalog and product names, prices on the product page) is set like a printed lookbook.
+       Mona Sans stays the voice of the app around it. Characters Bodoni lacks, like ₹, fall back to Mona Sans;
+       India's scripts fall back to Noto Serif (Naskh for Urdu; Noto Sans for Santali and Manipuri, which have no serif). */
+    --font-serif: 'Bodoni Moda Variable', 'Mona Sans Variable',
+        'Noto Serif Devanagari Variable', 'Noto Serif Bengali Variable', 'Noto Serif Gurmukhi Variable',
+        'Noto Serif Gujarati Variable', 'Noto Serif Oriya Variable', 'Noto Serif Tamil Variable',
+        'Noto Serif Telugu Variable', 'Noto Serif Kannada Variable', 'Noto Serif Malayalam Variable',
+        'Noto Naskh Arabic Variable', 'Noto Sans Ol Chiki Variable', 'Noto Sans Meetei Mayek Variable', ui-serif,
+        Georgia, serif;
     --color-ink: var(--ink);
     --color-sweep: var(--sweep);
     --color-tile: var(--tile);
-    --color-amber: var(--amber);
+    --color-brand: var(--brand);
+    --color-brand-2: var(--brand-2);
     --color-greycard: var(--greycard);
+    --color-line: var(--line);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,15 +89,33 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 10px -2px rgb(0 0 0 / 0.07);
+    --shadow-lg: 0 12px 24px -8px rgb(0 0 0 / 0.12);
+    --shadow-xl: 0 24px 48px -16px rgb(0 0 0 / 0.22);
+    --shadow-accent: 0 6px 16px -6px rgb(0 0 0 / 0.45);
+    --shadow-accent-lg: 0 12px 28px -10px rgb(0 0 0 / 0.55);
 }
 
 :root {
-    /* Studio palette: sweep backdrop, white tiles, slate ink, 18% grey card, tungsten amber (= "AI is working") */
-    --sweep: #f4f5f6;
+    /* Black and white, and nothing else: the only colour in Pictalog is in the product photos. The floor is a
+       neutral studio grey, tiles are white, ink is black. ("brand" is the ink too; it marks what you act on.) */
+    --sweep: #f4f4f4;
     --tile: #ffffff;
-    --ink: #1e2430;
-    --greycard: #8b8f96;
-    --amber: #f0a43a;
+    --ink: #0a0a0a;
+    --brand: #0a0a0a;
+    --brand-2: #3a3a3a;
+    --greycard: #8e8e8e;
+    --line: #e3e3e3;
+
+    /* Seamless paper backdrops, in the neutral greys photographers shoot on: grey can't tint a product, so its
+       colours stay true. Each catalog keeps one (see lib/paper.ts). */
+    --paper-chalk: #f0f0f0;
+    --paper-pearl: #eaeaea;
+    --paper-silver: #e4e4e4;
+    --paper-ash: #dedede;
+    --paper-smoke: #d8d8d8;
+    --paper-stone: #e7e7e7;
 
     --background: var(--sweep);
     --foreground: var(--ink);
@@ -69,30 +125,30 @@
     --popover-foreground: var(--ink);
     --primary: var(--ink);
     --primary-foreground: #ffffff;
-    --secondary: #e8eaed;
+    --secondary: #ececec;
     --secondary-foreground: var(--ink);
-    --muted: #eceef0;
-    --muted-foreground: #5d636d;
-    --accent: #e8eaed;
+    --muted: #ececec;
+    --muted-foreground: #666666;
+    --accent: #ececec;
     --accent-foreground: var(--ink);
-    --destructive: #c4332b;
-    --border: #dfe2e6;
-    --input: #d3d7dc;
-    --ring: #c98a2f;
-    --chart-1: #f0a43a;
-    --chart-2: #8b8f96;
-    --chart-3: #5d636d;
-    --chart-4: #3a404b;
-    --chart-5: #1e2430;
-    --radius: 0.5rem;
+    --destructive: #c4302b;
+    --border: var(--line);
+    --input: #d6d6d6;
+    --ring: var(--ink);
+    --chart-1: #0a0a0a;
+    --chart-2: #3a3a3a;
+    --chart-3: #6b6b6b;
+    --chart-4: #9e9e9e;
+    --chart-5: #cfcfcf;
+    --radius: 0.75rem;
     --sidebar: var(--tile);
     --sidebar-foreground: var(--ink);
     --sidebar-primary: var(--ink);
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #e8eaed;
+    --sidebar-accent: #ececec;
     --sidebar-accent-foreground: var(--ink);
-    --sidebar-border: #dfe2e6;
-    --sidebar-ring: #c98a2f;
+    --sidebar-border: var(--line);
+    --sidebar-ring: var(--ink);
 }
 
 @layer base {
@@ -101,46 +157,137 @@
     }
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+    /* Keep clear of the notch or status pill when the phone puts it at the side. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
     }
   html {
-    @apply font-sans;
+    @apply font-sans antialiased;
+    font-optical-sizing: auto;
     }
 }
 @layer base {
   h1, h2, h3 {
-    @apply font-heading;
-    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 }
 
-/* A slot whose image is being made: a warm studio light passing across the sweep. */
-.studio-light {
+/* Headlines are set wide and heavy, like the type on a catalog cover; body text stays at normal width. */
+@utility font-display {
+  font-family: var(--font-heading);
+  font-stretch: 125%;
+  font-weight: 780;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+/* A catalog's own words: catalog names, product names, the big price. Bodoni's optical sizes give hairline
+   contrast at headline size and sturdier strokes when small. */
+@utility font-catalog {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  font-variant-numeric: lining-nums;
+}
+/* A catalog's name drawn with Bodoni's display cut at every size, so the name on a shelf cover and the headline of
+   its page are the same shape and one can fly into the other. */
+@utility font-masthead {
+  font-variation-settings: "opsz" 96;
+}
+@utility font-wide {
+  font-stretch: 112%;
+  letter-spacing: -0.015em;
+}
+
+/* Solid black with a breath of graphite: buttons and badges. */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+
+/* Dot texture for the dark inverted sections: felt more than seen. */
+@utility dot-pattern {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Room for the iPhone notch and home bar when the app runs full screen. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* A seamless paper backdrop: flat on the wall, lit from above, a touch darker where it curves into the floor. */
+.paper {
+  --paper-base: var(--paper-stone);
+  --paper: color-mix(in oklab, var(--paper-base), white var(--paper-white, 0%));
   background:
-    radial-gradient(60% 55% at var(--light-x, 30%) 40%, color-mix(in srgb, var(--amber) 34%, transparent), transparent 70%),
-    var(--tile);
-  animation: studio-light 3.2s ease-in-out infinite alternate;
+    radial-gradient(90% 70% at 50% 18%, color-mix(in oklab, var(--paper), white 50%), transparent 70%),
+    linear-gradient(to bottom, var(--paper) 55%, color-mix(in oklab, var(--paper), var(--ink) 8%));
 }
-@property --light-x {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 30%;
+.paper[data-paper="chalk"] { --paper-base: var(--paper-chalk); }
+.paper[data-paper="pearl"] { --paper-base: var(--paper-pearl); }
+.paper[data-paper="silver"] { --paper-base: var(--paper-silver); }
+.paper[data-paper="ash"] { --paper-base: var(--paper-ash); }
+.paper[data-paper="smoke"] { --paper-base: var(--paper-smoke); }
+.paper[data-paper="stone"] { --paper-base: var(--paper-stone); }
+/* In the product grid the paper is lighter, so products read bright and clean. */
+.paper-pale { --paper-white: 45%; }
+
+/* An AI studio photo (product on white) placed on the paper: the white drops out and the product sits on the
+   backdrop. The small brightening first turns the photo's near-white edges fully white so no square shows. */
+.on-paper {
+  mix-blend-mode: multiply;
+  filter: brightness(1.05);
 }
-@keyframes studio-light {
-  from { --light-x: 22%; }
-  to { --light-x: 78%; }
+
+/* The signature moment: in a black-and-white app, a product photo arrives in black and white and develops into
+   colour as it comes into view, like a print in the tray (see hooks/use-develop.ts). */
+.develop {
+  filter: grayscale(var(--grey, 0)) contrast(var(--contrast, 1)) brightness(1.05);
+  transition: filter 1.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.develop[data-developed="false"] {
+  --grey: 1;
+  --contrast: 1.08;
+}
+
+/* A "live" dot: the helper is on, an image is being made. */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* The hero graphic's slow-turning dashed ring. */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow {
+  animation: spin-slow 60s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .studio-light { animation: none; }
+  .pulse-dot, .spin-slow { animation: none; }
+  .develop { transition: none; }
 }
 
 /* "Not enough detail": an 18% grey card framed with photographer's crop marks. */
 .grey-card {
   position: relative;
-  background: color-mix(in srgb, var(--greycard) 22%, var(--tile));
+  background: color-mix(in srgb, var(--greycard) 18%, var(--tile));
 }
 .grey-card::before,
 .grey-card::after {
@@ -158,4 +305,110 @@
 }
 .grey-card::after {
   transform: scaleX(-1);
+}
+
+/* Sliders scroll natively (smooth on phones, snap to each photo) with the scrollbar hidden. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Moving between screens slides like a phone app: deeper screens push in from the right, going back slides them
+   away (direction set in lib/page-transitions.ts). The top bar stays put, and a catalog's cover grows from the shelf
+   into its page. */
+@keyframes page-in {
+  from { translate: 100% 0; }
+}
+@keyframes page-out {
+  to { translate: -28% 0; filter: brightness(0.94); }
+}
+@keyframes page-back-in {
+  from { translate: -28% 0; filter: brightness(0.94); }
+}
+@keyframes page-back-out {
+  to { translate: 100% 0; }
+}
+::view-transition-group(*) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  mix-blend-mode: normal;
+}
+html[data-nav="forward"]::view-transition-old(root) { animation-name: page-out; }
+html[data-nav="forward"]::view-transition-new(root) {
+  animation-name: page-in;
+  box-shadow: -24px 0 48px -24px rgb(0 0 0 / 0.25);
+}
+html[data-nav="back"]::view-transition-old(root) {
+  animation-name: page-back-out;
+  z-index: 1;
+  box-shadow: -24px 0 48px -24px rgb(0 0 0 / 0.25);
+}
+html[data-nav="back"]::view-transition-new(root) { animation-name: page-back-in; }
+::view-transition-group(app-header) { z-index: 4; }
+/* The cover changes shape between the shelf (tall) and the catalog's page (wide). Both pictures are pinned to the
+   floor of the paper, where the products stand at the same place in each, so only the backdrop above them grows or
+   shrinks; the frame clips whatever sticks out. */
+::view-transition-group(catalog-cover) {
+  z-index: 2;
+  overflow: clip;
+  border-radius: 1.5rem;
+}
+::view-transition-old(catalog-cover),
+::view-transition-new(catalog-cover) {
+  inset-block: auto 0;
+}
+::view-transition-group(catalog-title) { z-index: 3; }
+
+/* The shelf of catalogs: the cover in the middle is in focus, its neighbours step back, and the products move a
+   little faster than the paper behind them, like objects standing in front of a backdrop. Runs on the scroll
+   position itself (no script), where the browser supports it. */
+@keyframes shelf-focus {
+  0%, 100% { scale: 0.9; opacity: 0.45; }
+  24%, 80% { scale: 1; opacity: 1; }
+}
+@keyframes shelf-parallax {
+  from { translate: 9% 0; }
+  to { translate: -9% 0; }
+}
+@supports (animation-timeline: view()) {
+  .shelf-item {
+    view-timeline: --shelf inline;
+  }
+  .shelf-item > * {
+    animation: shelf-focus linear both;
+    animation-timeline: --shelf;
+  }
+  .shelf-item .shelf-parallax {
+    animation: shelf-parallax linear both;
+    animation-timeline: --shelf;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .shelf-item > *,
+  .shelf-item .shelf-parallax {
+    animation: none;
+  }
+}
+
+/* A catalog's words in an Indian script or Urdu (marked by textProps in lib/script.ts): vowel signs sit above and below
+   the letters and Urdu letters join, so headlines get room and normal letter spacing. Unlayered, so it wins over the
+   tight leading and tracking utilities. */
+[data-script] {
+  letter-spacing: 0;
+}
+[data-script].font-catalog, [data-script].font-display {
+  line-height: 1.3;
 }

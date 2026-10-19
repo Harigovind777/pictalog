@@ -1,0 +1,38 @@
+text model qwen3:4b-instruct · OCR glm-ocr
+
+language               text           photo           table         rewrite
+English       5/11      11s   5/11      27s   4/11     455s   4/4       10s
+    text: [{'name': 'Cotton Saree, Red'}, {'name': 'Steel Water Bottle — 1 L'}, {'name': 'Tea Powder — 250 g'}, {'name': 'Brass Diya'}]
+    photo: [{'name': 'Cotton Saree, Red'}, {'name': 'Steel Water Bottle — 1 L'}, {'name': 'Tea Powder — 250 g'}, {'name': 'Brass Diya'}]
+    table: [{'name': 'Cotton Saree', 'sku': 'Cotton Saree Red ₹1,450'}, {'name': 'Steel Water Bottle', 'sku': 'Steel Water Bottle 1 L ₹350'}, {'name': 'Tea Powder', 'sku': 'Tea Powder 250 g ₹120'}, {'name': 'Brass Diya', 'sku': 'Brass Diya ₹899'}]
+    ✓ Cotton Saree → a red cotton saree, soft and flowing, long and wide, made of fine cotton, bright red color, smooth texture
+    ✓ Steel Water Bottle → a steel bottle, 1 liter, made of steel, smooth surface, silver color, cylindrical shape, about 10 inches tall and 3 inches wide
+    ✓ Tea Powder → powdered tea, fine, brown, small, flat, 250 grams
+    ✓ Brass Diya → brass oil lamp, round, tall, with a smooth surface, golden-yellow colour, small, with a wick and a base
+Hindi         5/11      16s   0/11 +    28s   0/11 +    26s   3/4        9s
+    text: [{'name': 'सूती साड़ी, लाल'}, {'name': 'स्टील की पानी की बोतल — 1 लीटर'}, {'name': 'चाय पत्ती — 250 ग्राम'}, {'name': 'पीतल का दीया'}]
+    photo: [{'name': 'सूची साधी, लाल'}, {'name': 'सत्तोरी की पानी की बोतल'}, {'name': 'Chaay पत्नी'}, {'name': 'Patiotl का दीया'}]
+    table: [{'name': 'सूत्री साइडी लाल', 'sku': 'सूत्री साइडी लाल है ₹1,450'}, {'name': 'स्टोरिल की पानी की बोतल', 'sku': 'स्टोरिल की पानी की बोतल है 1 लीटर है 350'}, {'name': 'Chaay पत्री', 'sku': 'Chaay पत्री है 250 याम है 890'}, {'name': 'Patirol का दीया', 'sku': 'Patirol का दीया है ₹899'}]
+    ✓ सूती साड़ी → cotton saree, red, soft, long, flowing
+    ✓ स्टील की पानी की बोतल → stainless steel water bottle, 1 liter, cylindrical, smooth, silver, medium height
+    ✓ चाय पत्ती → tea leaves, 250 grams
+    ✗ पीतल का दीया → brass candle
+Marathi       5/11      14s   0/11     306s   1/11 +    28s   2/4        9s
+    text: [{'name': 'सुती साडी, लाल'}, {'name': 'स्टीलची पाण्याची बाटली'}, {'name': 'चहा पावडर'}, {'name': 'पितळेचा दिवा'}]
+    photo: []
+    table: [{'name': 'सूत्री सातीं लाल', 'sku': 'सूत्री सातीं लाल है ₹1,450'}, {'name': 'सतोलची पाण्याची बाटलीं इ 1 लितर', 'sku': 'सतोलची पाण्याची बाटलीं इ 1 लितर है ₹350'}, {'name': 'चहा पावडर इ 250 ग्रेम'}, {'name': 'पिततेचा दिवा', 'sku': 'पिततेचा दिवा इ ₹899'}]
+    ✓ सुती साडी → cotton saree, red, soft, long, flowing
+    ✓ स्टीलची पाण्याची बाटली → stainless steel water bottle, 1 liter, cylindrical, smooth, silver, medium size
+    ✗ चहा पावडर → powder, 250 grams, fine, white, flat, small, light, soft, powdery texture
+    ✗ पितळेचा दिवा → brass candle
+Nepali        5/11      14s   0/11     305s   0/11     309s   3/4       10s
+    text: [{'name': 'सुती साडी, रातो'}, {'name': 'स्टिलको पानीको बोतल'}, {'name': 'चियापत्ती'}, {'name': 'पित्तलको दियो'}]
+    photo: []
+    table: []
+    ✓ सुती साडी → cotton saree, red in color, soft and flowing, typical indian length, wide and long
+    ✓ स्टिलको पानीको बोतल → stainless steel bottle, 1 liter, smooth metal, cylindrical, medium height, holds one liter of water
+    ✓ चियापत्ती → tea leaves, 250 grams
+    ✗ पित्तलको दियो → brass
+Bengali       4/11      16s   0/11 +    43s   0/11      14s   2/4       10s
+
+(stopped after 5 languages: the old models loop on Indian text until the 4 096-token cap, 5–8 minutes per page)

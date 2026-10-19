@@ -21,7 +21,7 @@ await page.getByLabel('Company name').fill('Kerala Weaves')
 await page.getByLabel('Email').fill(email)
 await page.getByLabel('Password').fill('password123')
 await page.getByRole('button', { name: 'Create account' }).click()
-await page.getByRole('heading', { name: 'Catalogs' }).waitFor()
+await page.getByRole('heading', { name: /catalog/i }).first().waitFor()
 await shot('02-catalogs-empty')
 
 await page.getByRole('button', { name: 'New catalog' }).first().click()

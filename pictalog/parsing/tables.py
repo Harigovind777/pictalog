@@ -1,6 +1,8 @@
 import csv
 import io
 import json
+import re
+import unicodedata
 
 import pandas as pd
 import pdfplumber
@@ -26,8 +28,17 @@ def read_tables(kind: FileKind, data: bytes) -> list[Table]:
         case "docx":
             return _docx(data)
         case "pdf":
-            return _pdf(data)
+            return [] if _broken_text_layer(_pdf_text(data)) else _pdf(data)
+        case "text":
+            text = decode_text(data)
+            return [_csv(text)] if _tab_separated(text) else []
     return []
+
+
+def _tab_separated(text: str) -> bool:
+    """Spreadsheets saved as text ("Unicode Text" in Excel) are tab-separated; prose is left for the AI reader."""
+    lines = [line for line in text.splitlines() if line.strip()]
+    return len(lines) >= 2 and "\t" in lines[0] and sum("\t" in line for line in lines) >= len(lines) * 0.8
 
 
 def extract_text(kind: FileKind, data: bytes) -> str:
@@ -40,13 +51,34 @@ def extract_text(kind: FileKind, data: bytes) -> str:
                 lines += [" | ".join(cell.text.strip() for cell in row.cells) for row in table.rows]
             return "\n".join(lines)
         case "pdf":
-            with pdfplumber.open(io.BytesIO(data)) as pdf:
-                return "\n".join(page.extract_text() or "" for page in pdf.pages).strip()
+            text = _pdf_text(data)
+            return "" if _broken_text_layer(text) else text
         case "text" | "csv":
             return decode_text(data)
         case "json":
             return decode_text(data)
     return ""
+
+
+def _pdf_text(data: bytes) -> str:
+    with pdfplumber.open(io.BytesIO(data)) as pdf:
+        return "\n".join(page.extract_text() or "" for page in pdf.pages).strip()
+
+
+_INDIAN_LETTER = re.compile(r"[\u0900-\u0dff\u1c50-\u1c7f\uabc0-\uabff]")
+_LOST_LETTER = re.compile(r"[\x00\ufffd\ue000-\uf8ff]")  # nothing, "unknown", or the font's private glyph numbers
+_ARABIC_AS_DRAWN = re.compile(r"[\ufb50-\ufdff\ufe70-\ufefc]")  # Urdu letters in their joined shapes, right to left
+
+
+def _broken_text_layer(text: str) -> bool:
+    """Indian-script text in many PDFs doesn't survive extraction: letters drawn joined come out as nothing or as
+    private characters, and vowel signs in the order they're drawn (புடைவ for புடவை). Those PDFs are read as pictures,
+    by OCR, instead."""
+    if _ARABIC_AS_DRAWN.search(text):
+        return True
+    if not _INDIAN_LETTER.search(text):
+        return False
+    return bool(_LOST_LETTER.search(text)) or any(unicodedata.category(word[0])[0] == "M" for word in text.split())
 
 
 def _spreadsheet(data: bytes) -> list[Table]:

@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { hasEnoughDetail, type TextField } from '@/lib/items'
+import { textProps } from '@/lib/script'
 import type { ExtractedItem } from '@/lib/types'
 
 const COLUMNS: { field: TextField; label: string; width: string }[] = [
@@ -28,13 +29,13 @@ export function ItemsGrid({ items, onChange, onRemove }: Props) {
   const shown = items.slice(0, limit)
   return (
     <div className="grid gap-3">
-      <div className="overflow-x-auto rounded-lg bg-tile">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-md">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
-              <th className="w-10 px-3 py-2 font-normal" aria-label="Photo" />
+              <th className="w-10 px-4 py-3 font-medium" aria-label="Photo" />
               {COLUMNS.map((c) => (
-                <th key={c.field} className={`px-2 py-2 font-normal ${c.width}`}>
+                <th key={c.field} className={`px-2.5 py-3 font-medium ${c.width}`}>
                   {c.label}
                 </th>
               ))}
@@ -46,19 +47,20 @@ export function ItemsGrid({ items, onChange, onRemove }: Props) {
               const detail = hasEnoughDetail(item)
               return (
                 <tr key={index} className="border-b last:border-b-0">
-                  <td className="px-3">
+                  <td className="px-4">
                     <span
                       title={detail ? 'Gets a photo' : 'Not enough detail for a photo'}
-                      className={`block size-2.5 rounded-full ${detail ? 'bg-amber' : 'bg-greycard/50'}`}
+                      className={`block size-2.5 rounded-full ${detail ? 'bg-ink' : 'bg-greycard/50'}`}
                     />
                   </td>
                   {COLUMNS.map((c) => (
                     <td key={c.field} className="px-1 py-1">
                       <input
+                        {...textProps(item[c.field])}
                         value={item[c.field] ?? ''}
                         onChange={(e) => onChange(index, c.field, e.target.value)}
                         aria-label={`${c.label}, row ${index + 1}`}
-                        className="h-8 w-full rounded-sm bg-transparent px-1.5 outline-ring hover:bg-sweep focus:bg-sweep focus-visible:outline-2"
+                        className={`h-9 w-full rounded-lg bg-transparent px-2 outline-ring hover:bg-sweep focus:bg-sweep focus-visible:outline-2 ${c.field === 'name' ? 'font-catalog text-[0.9375rem]' : ''}`}
                       />
                     </td>
                   ))}
@@ -75,7 +77,7 @@ export function ItemsGrid({ items, onChange, onRemove }: Props) {
       </div>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-2">
-          <span className="size-2.5 rounded-full bg-amber" /> Gets a photo
+          <span className="size-2.5 rounded-full bg-brand" /> Gets a photo
         </span>
         <span className="inline-flex items-center gap-2">
           <span className="size-2.5 rounded-full bg-greycard/50" /> Not enough detail, left without a photo

@@ -41,6 +41,44 @@ def test_delete_catalog_removes_it(client, signup):
     assert client.get(f"/api/catalogs/{cid}", headers=h).status_code == 404
 
 
+def test_listing_has_cover_photos_one_per_product(client, signup):
+    from test_worker_api import applied_catalog
+
+    h = signup()
+    catalog = applied_catalog(client, h)
+    tee, mug = catalog["products"]
+    photo = {"file": ("p.png", png_bytes(50, 50), "image/png")}
+    tee_m = client.post(f"/api/variants/{tee['variants'][1]['id']}/image", files=photo, headers=h).json()
+    client.post(f"/api/variants/{tee['variants'][0]['id']}/image", files=photo, headers=h)
+    mug_v = client.post(f"/api/variants/{mug['variants'][0]['id']}/image", files=photo, headers=h).json()
+
+    [summary] = client.get("/api/catalogs", headers=h).json()
+    tee_first = client.get(f"/api/catalogs/{catalog['id']}", headers=h).json()["products"][0]["variants"][0]
+    assert summary["covers"] == [
+        {"url": tee_first["thumb_url"], "generated": False},
+        {"url": mug_v["thumb_url"], "generated": False},
+    ]
+    assert tee_m["thumb_url"] not in [c["url"] for c in summary["covers"]]
+
+
+def test_cover_marks_ai_photos(client, signup):
+    from test_worker_api import W, applied_catalog
+
+    h = signup()
+    applied_catalog(client, h)
+    job = client.post("/api/worker/claim", json={"engine": "flux"}, headers=W).json()
+    photo = {"file": ("a.png", png_bytes(64, 64), "image/png")}
+    assert client.post(f"/api/worker/jobs/{job['id']}/image", files=photo, headers=W).status_code == 204
+    [cover] = client.get("/api/catalogs", headers=h).json()[0]["covers"]
+    assert cover["generated"] is True
+
+
+def test_empty_catalog_has_no_cover_photos(client, signup):
+    h = signup()
+    client.post("/api/catalogs", json={"name": "Summer"}, headers=h)
+    assert client.get("/api/catalogs", headers=h).json()[0]["covers"] == []
+
+
 def test_catalogs_need_login(client):
     assert client.get("/api/catalogs").status_code == 401
 
