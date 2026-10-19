@@ -4,21 +4,15 @@ import io
 import re
 from collections.abc import Callable
 from datetime import date
-from pathlib import Path
-
 import httpx
 from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 
 from pictalog.models import Catalog, Product, User, Variant
-
-FONT_DIR = Path(__file__).parent / "fonts"
-REGULAR, BOLD = "DejaVuSans", "DejaVuSans-Bold"  # covers ₹, €, £ and accented Latin
+from pictalog.pdf_text import draw, fit, register_fonts
 INK, MUTED, PLACEHOLDER = HexColor("#1c1c1e"), HexColor("#6e6e73"), HexColor("#eeeeef")
 PAGE_W, PAGE_H = A4
 MARGIN, GUTTER = 15 * mm, 8 * mm
@@ -28,12 +22,6 @@ CELL_H = (PAGE_H - 2 * MARGIN - 10 * mm - (ROWS - 1) * GUTTER) / ROWS  # 10 mm r
 TEXT_H = 20 * mm
 
 Fetch = Callable[..., httpx.Response]
-
-
-def _register_fonts() -> None:
-    if REGULAR not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont(REGULAR, str(FONT_DIR / "DejaVuSans.ttf")))
-        pdfmetrics.registerFont(TTFont(BOLD, str(FONT_DIR / "DejaVuSans-Bold.ttf")))
 
 
 def _default_fetch(url: str, timeout: float) -> httpx.Response:
@@ -50,14 +38,6 @@ def price_label(price_text: str | None, currency: str) -> str:
 def variant_line(variant: Variant) -> str:
     parts = [f"Size {variant.size}" if variant.size else None, variant.colour, variant.material]
     return " · ".join(p for p in parts if p)
-
-
-def _fit(text: str, font: str, size: float, width: float) -> str:
-    if pdfmetrics.stringWidth(text, font, size) <= width:
-        return text
-    while text and pdfmetrics.stringWidth(text + "…", font, size) > width:
-        text = text[:-1]
-    return text.rstrip() + "…"
 
 
 def _image_bytes(variant: Variant, storage, fetch: Fetch) -> bytes | None:
@@ -83,8 +63,7 @@ def _draw_image(c: Canvas, data: bytes | None, x: float, y: float, size: float) 
     c.setFillColor(PLACEHOLDER)
     c.roundRect(x, y, size, size, 3 * mm, stroke=0, fill=1)
     c.setFillColor(MUTED)
-    c.setFont(REGULAR, 10)
-    c.drawCentredString(x + size / 2, y + size / 2 - 3, "No image")
+    draw(c, x + size / 2, y + size / 2 - 3, "No image", 10, align="centre")
 
 
 def _cover(c: Canvas, catalog: Catalog, user: User, storage, has_products: bool) -> None:
@@ -96,23 +75,20 @@ def _cover(c: Canvas, catalog: Catalog, user: User, storage, has_products: bool)
         except Exception:
             pass
     c.setFillColor(INK)
-    c.setFont(BOLD, 26)
-    c.drawCentredString(PAGE_W / 2, PAGE_H / 2 + 18 * mm, _fit(user.company_name, BOLD, 26, PAGE_W - 2 * MARGIN))
-    c.setFont(REGULAR, 16)
-    c.drawCentredString(PAGE_W / 2, PAGE_H / 2 + 4 * mm, _fit(catalog.name, REGULAR, 16, PAGE_W - 2 * MARGIN))
+    width = PAGE_W - 2 * MARGIN
+    draw(c, PAGE_W / 2, PAGE_H / 2 + 18 * mm, fit(user.company_name, 26, width, bold=True), 26, bold=True, align="centre")
+    draw(c, PAGE_W / 2, PAGE_H / 2 + 4 * mm, fit(catalog.name, 16, width), 16, align="centre")
     c.setFillColor(MUTED)
-    c.setFont(REGULAR, 10)
-    c.drawCentredString(PAGE_W / 2, PAGE_H / 2 - 6 * mm, date.today().strftime("%B %Y"))
+    draw(c, PAGE_W / 2, PAGE_H / 2 - 6 * mm, date.today().strftime("%B %Y"), 10, align="centre")
     if not has_products:
-        c.drawCentredString(PAGE_W / 2, PAGE_H / 2 - 20 * mm, "This catalog has no products yet.")
+        draw(c, PAGE_W / 2, PAGE_H / 2 - 20 * mm, "This catalog has no products yet.", 10, align="centre")
     c.showPage()
 
 
 def _footer(c: Canvas, user: User, page: int) -> None:
     c.setFillColor(MUTED)
-    c.setFont(REGULAR, 8)
-    c.drawString(MARGIN, MARGIN, user.company_name)
-    c.drawRightString(PAGE_W - MARGIN, MARGIN, str(page))
+    draw(c, MARGIN, MARGIN, fit(user.company_name, 8, PAGE_W / 2), 8)
+    draw(c, PAGE_W - MARGIN, MARGIN, str(page), 8, align="right")
 
 
 def _cell(c: Canvas, product: Product, variant: Variant, currency: str, image: bytes | None, x: float, top: float) -> None:
@@ -120,24 +96,21 @@ def _cell(c: Canvas, product: Product, variant: Variant, currency: str, image: b
     _draw_image(c, image, x, top - size, size)  # left edge lines up with the text below
     y = top - size - 6 * mm
     c.setFillColor(INK)
-    c.setFont(BOLD, 11)
-    c.drawString(x, y, _fit(product.name or variant.sku or "Untitled", BOLD, 11, CELL_W))
+    draw(c, x, y, fit(product.name or variant.sku or "Untitled", 11, CELL_W, bold=True), 11, bold=True)
     line = variant_line(variant)
     if line:
         y -= 5 * mm
         c.setFillColor(MUTED)
-        c.setFont(REGULAR, 9)
-        c.drawString(x, y, _fit(line, REGULAR, 9, CELL_W))
+        draw(c, x, y, fit(line, 9, CELL_W), 9)
     price = price_label(variant.price_text, currency)
     if price:
         y -= 5.5 * mm
         c.setFillColor(INK)
-        c.setFont(BOLD, 11)
-        c.drawString(x, y, _fit(price, BOLD, 11, CELL_W))
+        draw(c, x, y, fit(price, 11, CELL_W, bold=True), 11, bold=True)
 
 
 def render_catalog_pdf(catalog: Catalog, user: User, storage, fetch: Fetch = _default_fetch) -> bytes:
-    _register_fonts()
+    register_fonts()
     buf = io.BytesIO()
     c = Canvas(buf, pagesize=A4)
     c.setTitle(catalog.name)
